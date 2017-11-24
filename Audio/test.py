@@ -24,8 +24,12 @@ for i in range(2):
         
         # recognize speech using Google Speech Recognition
         value = r.recognize_google(audio,show_all = True)
-
-        all_processed_outputs.append(value['alternative'])
+        print(value)
+        
+        if 'alternative' in value:
+            all_processed_outputs.append(value['alternative'])
+        else:
+            all_processed_outputs.append([])
 
             
 
@@ -35,6 +39,19 @@ for i in range(2):
 
 
 print(all_processed_outputs)
+
+first_phrase = []
+
+for item in all_processed_outputs:
+    for dictionary in item:
+        first_phrase.append(dictionary["transcript"])
+
+print(first_phrase)
+
+for phrase in first_phrase:
+    phrase.replace(" ","")
+    
+
 
 
 '''
