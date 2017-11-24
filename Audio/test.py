@@ -5,22 +5,35 @@ m = sr.Microphone()
 
 all_processed_outputs = []
 
+input_file = "Recording.wav"
+
+
+
 
 for i in range(2):
 
     try:
-        print("A moment of silence, please...")
-        with m as source: r.adjust_for_ambient_noise(source)
-        print("Set minimum energy threshold to {}".format(r.energy_threshold))
 
-        print("Record phrase ",i,": ");
-        
-        print("Say something!")
-        with m as source: audio = r.listen(source)
-        print("Got it! Now to recognize it...")
+        if (input_file == ""):
 
-        with open("microphone-results.wav", "wb") as f:
-                f.write(audio.get_wav_data())
+            print("A moment of silence, please...")
+
+
+            with m as source: r.adjust_for_ambient_noise(source)
+            print("Set minimum energy threshold to {}".format(r.energy_threshold))
+
+            print("Record phrase ",i,": ");
+            
+            print("Say something!")
+            with m as source: audio = r.listen(source)
+            print("Got it! Now to recognize it...")
+
+            with open("microphone-results.wav", "wb") as f:
+                    f.write(audio.get_wav_data())
+        else:
+            print("Reading from ", input_file)
+            with sr.AudioFile(input_file) as source:
+                audio = r.record(source)
         
         # recognize speech using Google Speech Recognition
         value = r.recognize_google(audio,show_all = True)
@@ -38,7 +51,7 @@ for i in range(2):
         pass
 
 
-print(all_processed_outputs)
+#print(all_processed_outputs)
 
 first_phrase = []
 
@@ -46,11 +59,20 @@ for item in all_processed_outputs:
     for dictionary in item:
         first_phrase.append(dictionary["transcript"])
 
-print(first_phrase)
+#print(first_phrase)
 
 for phrase in first_phrase:
     phrase.replace(" ","")
     
+#print(first_phrase)
+
+from collections import Counter
+c = Counter(first_phrase)
+
+for phrase,count in c.most_common(1):
+    print ('The phrase is likely to be: %s and the number of occurences is: %7d' % (phrase, count))
+
+
 
 
 
