@@ -1,12 +1,10 @@
 from flask import Flask,render_template,request,Response,jsonify
 import json
 
-#import smbus
+import smbus
 import time
 
 app = Flask(__name__)
-
-#time_list = []
 
 @app.route("/graph",methods=["GET"])
 def send_graph_values():
@@ -45,11 +43,11 @@ def send_request():
 
     print(instruction,command)
     
-    #bus.write_byte(address,ord(instruction))
-    #time.sleep(0.01)
+    bus.write_byte(address,ord(instruction))
+    time.sleep(0.01)
 
-    #bus.write_byte(address,int(command))
-    #time.sleep(0.01)
+    bus.write_byte(address,int(command))
+    time.sleep(0.01)
 
     response_content = 'sent instruction ' + instruction + command
     resp = Response(response_content)    
@@ -60,7 +58,7 @@ def send_request():
     
 @app.route("/collect",methods = ["GET"])
 def collect_values():
-    #msg = chr(bus.read_byte(address))
+    msg = chr(bus.read_byte(address))
 
     msg = "test"
 
@@ -79,7 +77,7 @@ def index():
 
 if __name__ == '__main__':
     #app = create_app()
-    #bus = smbus.SMBus(1)    
+    bus = smbus.SMBus(1)    
     address = 0x04
     
     app.run(host="172.28.176.223")
