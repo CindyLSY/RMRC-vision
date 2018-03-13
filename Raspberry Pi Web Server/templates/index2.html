@@ -14,12 +14,57 @@
     <link href="../static/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="../static/styles.css" rel="stylesheet">
-
     <script defer src="../static/fa-regular.min.js"></script>
     <script src="../static/fontawesome.min.js"></script>
 
     <script defer src="../static/index.js"></script>
+
+    <style>
+
+      .slidercontainer {
+        width : 100%;
+      }
+
+    /* The slider itself */
+    .slider {
+        -webkit-appearance: none;  /* Override default CSS styles */
+        appearance: none;
+        width: 100%; /* Full-width */
+        height: 25px; /* Specified height */
+        background: #d3d3d3; /* Grey background */
+        outline: none; /* Remove outline */
+        opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+        -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+        transition: opacity .2s;
+    }
+
+    /* Mouse-over effects */
+    .slider:hover {
+        opacity: 1; /* Fully shown on mouse-over */
+    }
+
+    /* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */ 
+    .slider::-webkit-slider-thumb {
+        -webkit-appearance: none; /* Override default look */
+        appearance: none;
+        width: 25px; /* Set a specific slider handle width */
+        height: 25px; /* Slider handle height */
+        background: #4CAF50; /* Green background */
+        cursor: pointer; /* Cursor on hover */
+    }
+
+    .slider::-moz-range-thumb {
+        width: 25px; /* Set a specific slider handle width */
+        height: 25px; /* Slider handle height */
+        background: #4CAF50; /* Green background */
+        cursor: pointer; /* Cursor on hover */
+    }
+
+    .top-buffer { margin-top:20px; }
+    
+    
+    </style>
+
 
   </head>
 
@@ -43,17 +88,17 @@
           </div>
           <div class="card-body">
               <div class="btn-group-vertical">
-                  <button type="button" class="btn btn-lg btn-outline-primary" id="up-btn">
+                  <button type="button" class="btn btn-med btn-outline-primary" id="up-btn">
                     <i class="far fa-arrow-alt-circle-up fa-2x" ></i>
                   </button>
                   <div class="btn-group" role="group" aria-label="Basic example">
-                      <button type="button" class="btn btn-lg btn-outline-primary" id="left-btn">
+                      <button type="button" class="btn btn-med btn-outline-primary" id="left-btn">
                         <i class="far fa-arrow-alt-circle-left fa-2x" ></i>
                       </button>
-                      <button type="button" class="btn btn-lg btn-outline-primary" id="down-btn">
+                      <button type="button" class="btn btn-med btn-outline-primary" id="down-btn">
                         <i class="far fa-arrow-alt-circle-down fa-2x" ></i>
                       </button>
-                      <button type="button" class="btn btn-lg btn-outline-primary" id="right-btn">
+                      <button type="button" class="btn btn-med btn-outline-primary" id="right-btn">
                         <i class="far fa-arrow-alt-circle-right fa-2x" ></i>
                       </button>
                   </div>
@@ -65,6 +110,63 @@
             <h4 class="my-0 font-weight-normal">Arm Control</h4>
           </div>
           <div class="card-body">
+            <div class="container">
+              <div class = "row top-buffer">
+                <div class ="col">
+                  Bottom Servo 
+                </div>
+                <div class="col">
+                  <div class="slidercontainer">
+                    <input type="range" min="1" max="255" value="50" class="slider" id="bot-servo-slider">
+                    <div id="bot-servo-value">50</div>
+                      
+                  </div>               
+                </div>
+              </div>
+              <div class = "row top-buffer">
+                <div class ="col">
+                  Mid Servo 
+                </div>
+                <div class="col">
+                  <div class="slidercontainer">
+                    <input type="range" min="1" max="255" value="50" class="slider" id="mid-servo-slider">
+                    <div id="mid-servo-value">50</div>
+                  </div>               
+                </div>
+              </div>
+              <div class = "row top-buffer">
+                  <div class ="col">
+                    Swinger Servo 
+                  </div>
+                  <div class="col">
+                    <div class="slidercontainer">
+                      <input type="range" min="1" max="255" value="50" class="slider" id="swinger-servo-slider">
+                      <div id="swinger-servo-value">50 </div>
+                    </div>               
+                  </div>
+                </div>
+                <div class = "row top-buffer">
+                  <div class ="col">
+                    Rotor Servo 
+                  </div>
+                  <div class="col">
+                    <div class="slidercontainer">
+                      <input type="range" min="1" max="255" value="50" class="slider" id="rotor-servo-slider">
+                      <div id="rotor-servo-value">50</div>
+                    </div>               
+                  </div>
+                </div>
+                <div class="row top-buffer">
+                  <div class="col">
+                      <button type="button" class="btn btn-lg btn-outline-primary" id="claw-btn">
+                        Claw Deactivated!
+                      </button>
+                  </div>
+                </div>
+
+            </div>
+          
+
           </div>
         </div>
         <div class="card mb-4 box-shadow">
@@ -84,6 +186,6 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script>window.jQuery || document.write('<script src="/static/jquery.min.js"><\/script>') </script>
     <script src="../static/bootstrap.min.js"></script>
-    <script src="/static/jquery.min.js"></script>
+    <script src="../static/jquery.min.js"></script>
   </body>
 </html>

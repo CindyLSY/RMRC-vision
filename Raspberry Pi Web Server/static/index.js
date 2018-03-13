@@ -11,25 +11,29 @@ document.onkeydown = function(e) {
         switch (e.keyCode) {
             case 37:                    // left key
                 e.preventDefault();
-                sendrequest("b",127);
+                sendrequest("b", -127);         //left motor speed = -127
+                sendrequest("a", 127);          //right motor speed = 127
                 button_pressed = 1;
                 $('#left-btn').css({"background-color":"#007bff","color":"white"});
                 break;
             case 38:
                 e.preventDefault();     // up key
-                sendrequest("c",127);
+                sendrequest("a", 127);           //right motor speed = 127
+                sendrequest("b", 127);           //left motor speed = 127
                 button_pressed = 1;
                 $('#up-btn').css({"background-color":"#007bff","color":"white"});
                 break;
             case 39:
                 e.preventDefault();    // right key
-                sendrequest("a",127);
+                sendrequest("a", -127);           //right motor speed = -127
+                sendrequest("b", 127);            //left motor speed = 127
                 button_pressed = 1;
                 $('#right-btn').css({"background-color":"#007bff","color":"white"});
                 break;
             case 40:
                 e.preventDefault();    // down key
-                sendrequest("d",127);
+                sendrequest("a",-127);            //right motor speed = -127
+                sendrequest("b",-127);            //left motor speed = -127
                 button_pressed = 1;
                 $('#down-btn').css({"background-color":"#007bff","color":"white"});
                 break;
@@ -53,8 +57,49 @@ document.onkeyup = function(e) {
             $('#right-btn').css({"background-color":"white","color":"#007bff"});
         case 40:
             $('#down-btn').css({"background-color":"white","color":"#007bff"});
-            sendrequest("e",127);               //Stop the robot from moving
+            sendrequest("a",0);               //Stop the robot from moving
+            sendrequest("b",0);
             button_pressed = 0;
             break;
     }
 };
+
+window.onload = function(e){
+    
+    $.each($('.slider'),function(n,slider){
+
+        slider.oninput = function(){
+            slider.nextElementSibling.innerText = this.value;
+
+            switch (slider.id){
+                case "bot-servo-slider":
+                    sendrequest("d",this.value);
+                    break;
+                case "mid-servo-slider":
+                    sendrequest("e",this.value);
+                    break;
+                case "swinger-servo-slider":
+                    sendrequest("f",this.value);
+                    break;
+                case "rotor-servo-slider":
+                    sendrequest("h",this.value);
+                    break;
+            }
+        }
+    });
+
+    $("#claw-btn").click(function(){
+        claw_btn = $('#claw-btn');
+        if (claw_btn.css("background-color") == "rgb(0, 123, 255)"){
+            sendrequest("g",1);
+            claw_btn.css({"background-color":"white","color":"#007bff"});
+            claw_btn.text("Claw Deactivated!")
+        }
+        else{
+            sendrequest("g",0);
+            claw_btn.css({"background-color":"#007bff","color":"white"});
+            claw_btn.text("Claw Activated!");
+        }
+    });
+
+}
