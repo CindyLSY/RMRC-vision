@@ -1,7 +1,18 @@
 
+
+//////////////////// HTTP requests to the Flask API /////////////////////////////
+
 function sendrequest(instruction_val,command_val){
     $.post( "/send", { instruction: instruction_val, command: command_val } );
 }  
+
+function collectSensorValues(){
+    $.get("/collect", function(data){
+        $("#accel-value").text(data);
+    });
+}
+
+////////////////// Handle the arror keystrokes to drive the robot /////////////////////
 
 var button_pressed = 0;
 
@@ -64,6 +75,10 @@ document.onkeyup = function(e) {
     }
 };
 
+
+
+///////////////////// Other UI elements (slider and graphs / sensor values) /////////////////////////
+
 window.onload = function(e){
     
     $.each($('.slider'),function(n,slider){
@@ -88,6 +103,11 @@ window.onload = function(e){
         }
     });
 
+    //Claw button starts deactivated. 
+    //Make sure to set its color appropriately
+    $('#claw-btn').text("Claw Deactivated!");
+    $('#claw-btn').css({"background-color":"white","color":"#007bff"});
+
     $("#claw-btn").click(function(){
         claw_btn = $('#claw-btn');
         if (claw_btn.css("background-color") == "rgb(0, 123, 255)"){
@@ -102,4 +122,8 @@ window.onload = function(e){
         }
     });
 
+
+    //setInterval(function(){collectSensorValues();},3000);
+
 }
+

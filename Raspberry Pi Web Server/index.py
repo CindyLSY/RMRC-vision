@@ -60,8 +60,6 @@ def send_request():
 def collect_values():
     msg = chr(bus.read_byte(address))
 
-    msg = "test"
-
     response_content = "Collected Value: " + msg
     resp = Response(response_content)    
     resp.headers['Content-type'] = 'text/plain'
