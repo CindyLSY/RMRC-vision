@@ -42,22 +42,22 @@
 
 
 //MOVING MOTORS ////////////////////////
-#define MOTOR_R_DIR 9
-#define MOTOR_R_ADIR 4
-#define MOTOR_R_PWM 5
+#define MOTOR_R_DIR 12
+#define MOTOR_R_ADIR 13
+#define MOTOR_R_PWM 8
 
-#define MOTOR_L_DIR 7
-#define MOTOR_L_ADIR 6
-#define MOTOR_L_PWM 8
+#define MOTOR_L_DIR 10
+#define MOTOR_L_ADIR 11
+#define MOTOR_L_PWM 9
 
 //ARM MOTORS
 #define Claw 11  //THIS NEEDS TO BE ADJUSTED
 
 //SERVOS////////////////////////////////
-#define servo_Bot_num 13
-#define servo_Mid_num 12
-#define servo_Swinger_num 8
-#define servo_Rotor_num 7
+#define servo_Bot_num 7
+#define servo_Mid_num 6
+#define servo_Swinger_num 5
+#define servo_Rotor_num 4
 
 Servo servos[4];
 int servos_pos[4];  //Bot Mid Swinger  Rotor
@@ -125,18 +125,19 @@ void setup() {
 
 //----------LOOP--------------------------------------------------------------------------------
 void loop() {
-  // delay(15);
-  timeLoopStart = millis();
+  delay(15);
+  //timeLoopStart = millis();
+  read_servos_positions();
   //Activate servos
   servos_thread();
-
+  /*
   while(incoming_type != 255){
     //programm running, listening for orders
   }
   
   timeLoopEnd = millis();
   Serial.print("time program running: ");
-  Serial.println(timeLoopEnd - timeLoopStart);
+  Serial.println(timeLoopEnd - timeLoopStart);*/
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -144,7 +145,6 @@ void loop() {
 ///////////////////////////////////////////////////////////////////
 
 void executeOrder(){
-  read_servos_positions();
   Serial.print("Executing order: ");
   Serial.print(incoming_type);
   Serial.println(incoming_value);
@@ -174,7 +174,7 @@ void executeOrder(){
         servos_goto_pos[2] = incoming_value;
         break;
 
-      case 'g':  //(Claw)
+      case 'g':  //(Claw) won t work
         digitalWrite(MOTOR_R_DIR, (incoming_value ? HIGH : LOW));
         digitalWrite(MOTOR_R_ADIR, (incoming_value ? LOW : HIGH));
         digitalWrite(MOTOR_R_PWM, 50);  //THIS VALUE MUST BE VERIFIED - too small?
@@ -194,9 +194,14 @@ void executeOrder(){
 
 void ReceiveMassage(int n){
   int value = Wire.read();
+  Serial.println(value);
   if(incoming_type == '*'){
     incoming_type = char(value);
   }else{
+    if(value > 128){
+      value = -256 + value;
+    }
+    value = value *2;
     incoming_value = value;
     executeOrder();
   }
@@ -217,12 +222,12 @@ void drive_controller(boolean motor, int motor_speed) {  //1 - right, o - left
   if (motor) {
     digitalWrite(MOTOR_R_DIR, (dir ? HIGH : LOW));
     digitalWrite(MOTOR_R_ADIR, (dir ? LOW : HIGH));
-    digitalWrite(MOTOR_R_PWM, motor_speed);
+    analogWrite(MOTOR_R_PWM, motor_speed);
   }
   else {
     digitalWrite(MOTOR_L_DIR, (dir ? HIGH : LOW));
     digitalWrite(MOTOR_L_ADIR, (dir ? LOW : HIGH));
-    digitalWrite(MOTOR_L_PWM, motor_speed);
+    analogWrite(MOTOR_L_PWM, motor_speed);
   }
 }
 
@@ -233,7 +238,7 @@ void read_servos_positions() {
   servos_pos[1] = servos[1].read();
   servos_pos[2] = servos[2].read();
   servos_pos[3] = servos[3].read();
-
+  /*
   Serial.println("Bot Mid Swinger Rotor");
   Serial.print(servos_pos[0]);
   Serial.print("  ");
@@ -250,6 +255,7 @@ void read_servos_positions() {
   Serial.print(servos_goto_pos[2]);
   Serial.print("  ");
   Serial.println(servos_goto_pos[3]);
+  */
 }
 
 
