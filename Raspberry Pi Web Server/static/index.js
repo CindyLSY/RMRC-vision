@@ -15,6 +15,7 @@ function collectSensorValues(){
 ////////////////// Handle the arror keystrokes to drive the robot /////////////////////
 
 var button_pressed = 0;
+var speed = 127;
 
 document.onkeydown = function(e) {
 
@@ -22,29 +23,29 @@ document.onkeydown = function(e) {
         switch (e.keyCode) {
             case 37:                    // left key
                 e.preventDefault();
-                sendrequest("b", -127);         //left motor speed = -127
-                sendrequest("a", 127);          //right motor speed = 127
+                sendrequest("b", -speed);         //left motor speed = -127
+                sendrequest("a", speed);          //right motor speed = 127
                 button_pressed = 1;
                 $('#left-btn').css({"background-color":"#007bff","color":"white"});
                 break;
             case 38:
                 e.preventDefault();     // up key
-                sendrequest("a", 127);           //right motor speed = 127
-                sendrequest("b", 127);           //left motor speed = 127
+                sendrequest("a", speed);           //right motor speed = 127
+                sendrequest("b", speed);           //left motor speed = 127
                 button_pressed = 1;
                 $('#up-btn').css({"background-color":"#007bff","color":"white"});
                 break;
             case 39:
                 e.preventDefault();    // right key
-                sendrequest("a", -127);           //right motor speed = -127
-                sendrequest("b", 127);            //left motor speed = 127
+                sendrequest("a", -speed);           //right motor speed = -127
+                sendrequest("b", speed);            //left motor speed = 127
                 button_pressed = 1;
                 $('#right-btn').css({"background-color":"#007bff","color":"white"});
                 break;
             case 40:
                 e.preventDefault();    // down key
-                sendrequest("a",-127);            //right motor speed = -127
-                sendrequest("b",-127);            //left motor speed = -127
+                sendrequest("a",-speed);            //right motor speed = -127
+                sendrequest("b",-speed);            //left motor speed = -127
                 button_pressed = 1;
                 $('#down-btn').css({"background-color":"#007bff","color":"white"});
                 break;
@@ -98,6 +99,9 @@ window.onload = function(e){
                     break;
                 case "rotor-servo-slider":
                     sendrequest("h",this.value);
+                    break;
+                case "speed-slider":
+                    speed = this.value;
                     break;
             }
         }

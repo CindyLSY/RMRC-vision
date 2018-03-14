@@ -6,33 +6,6 @@ import time
 
 app = Flask(__name__)
 
-@app.route("/graph",methods=["GET"])
-def send_graph_values():
-
-    bus.write_byte(address, ord('a'))
-    time.sleep(0.01)
-    
-    bus.write_byte(address, 129)
-
-    time.sleep(1)
-    bus.write_byte(address, ord('c'))
-    time.sleep(0.01)
-    bus.write_byte(address, 3)
-    
-    time.sleep(1)
-    msg = chr(bus.read_byte(address))
-    print(msg)
-    
-    #stops program
-    bus.write_byte(address, 255)
-
-    response_content = b'data transfer successful!'
-    resp = Response(response_content)    
-    resp.headers['Content-type'] = 'text/plain'
-    resp.headers['Content-Length'] = len(response_content)
-
-    return resp
-
 @app.route("/send",methods=["POST"])
 def send_request():
     instruction = request.values.get("instruction")
@@ -78,4 +51,4 @@ if __name__ == '__main__':
     bus = smbus.SMBus(1)    
     address = 0x04
     
-    app.run(host="172.28.176.223")
+    app.run(host="192.168.0.102")
