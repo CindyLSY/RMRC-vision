@@ -106,7 +106,13 @@ void setup() {
   pinMode(MOTOR_L_ADIR, OUTPUT);
   pinMode(MOTOR_L_PWM, OUTPUT);
 
-  //Arm motors
+  //Claw motors
+  pinMode(ClawA, OUTPUT);
+  pinMode(ClawB, OUTPUT);
+  pinMode(ClawPWM, OUTPUT);
+
+  // STBY
+  pinMode(STBY, OUTPUT);
 
   //Servos
   
@@ -132,16 +138,12 @@ void setup() {
 //----------LOOP--------------------------------------------------------------------------------
 void loop() {
 
-  digitalWrite(STBY, HIGH);
-  
-  while(true) {
     delay(15);
     //timeLoopStart = millis();
     read_servos_positions();
     //Activate servos
     servos_thread();
   
-  }
 }
 
 ///////////////////////////////////////////////////////////////////
@@ -178,15 +180,10 @@ void executeOrder(){
         servos_goto_pos[2] = incoming_value;
         break;
 
-      case 'g':  //(Claw) won t work
-      　 Serial.println("claw mode activated");
-        digitalWrite(ClawA, (incoming_value ? HIGH : LOW));
-        digitalWrite(ClawB, (incoming_value ? LOW : HIGH));
-        analogWrite(ClawPWM, 255);  
-        delay(300);
-
-        digitalWrite(ClawA, LOW); digitalWrite(ClawB, LOW);
-        
+      case 'g':  //(Claw) Works but the delay() function is not behaving as it should be
+        Serial.println("claw mode activated");
+        claw(incoming_value);
+        Serial.print("incoming value"); Serial.println(incoming_value);
         break;
         
       case 'h':  //(Rotor)
@@ -210,7 +207,9 @@ void ReceiveMassage(int n){
     if(value > 128){
       value = -256 + value;
     }
-    value = value *2;
+    if(incoming_type == "a" || incoming_type == "b"){
+      value = value *2;
+    }
     incoming_value = value;
     executeOrder();
   }
@@ -239,6 +238,24 @@ void drive_controller(boolean motor, int motor_speed) {  //1 - right, o - left
     analogWrite(MOTOR_L_PWM, motor_speed);
   }
 }
+
+///////////////////CLAW PROGRAM////////////////////////////////////////////////////////////////////////////////////////////////////////
+void claw(boolean dir) {  
+
+  digitalWrite(STBY, HIGH); 
+ 
+  digitalWrite(ClawA, (dir ? LOW : HIGH));
+  digitalWrite(ClawB, (dir ? HIGH : LOW));
+  analogWrite(ClawPWM,255);
+
+  // not sure why delay function is not working as it is supposed to. 
+  // 10000 roughly corresponds to 100ms. 
+  delay(20000);
+  
+  digitalWrite(ClawA, LOW); digitalWrite(ClawB, LOW);
+  digitalWrite(STBY, LOW);
+}
+
 
 
 ///////////////////READ POSITIONS AND SEND INFO ABOUT SERVOS ARM///////////////////////////////////////////////////////////////////////////////////////////////////////////
