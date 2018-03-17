@@ -67,7 +67,7 @@
 
 Servo servos[4];
 int servos_pos[4];  //Bot Mid Swinger  Rotor
-int servos_goto_pos[4] = {175, 180, 93, 180};
+int servos_goto_pos[4] = {190, 180, 93, 180};
 int pos_goto_temp;
 
 //SERIAL COMMUNICATION VARIABLES ////////////////////////
@@ -200,17 +200,25 @@ void executeOrder(){
 
 void ReceiveMassage(int n){
   int value = Wire.read();
-  Serial.println(value);
+  Serial.print("value in"); Serial.println(value);
   if(incoming_type == '*'){
     incoming_type = char(value);
   }else{
+    Serial.println(incoming_type);
+    if(incoming_type == 'd' ||incoming_type == 'e' ||
+    incoming_type == 'f' || incoming_type == 'h' ){
+      Serial.println("GOT IT");
+    }
+    else {
     if(value > 128){
       value = -256 + value;
     }
-    if(incoming_type == "a" || incoming_type == "b"){
+    if(incoming_type == 'a' || incoming_type == 'b'){
       value = value *2;
     }
+    }
     incoming_value = value;
+    Serial.print("value processed"); Serial.println(value);
     executeOrder();
   }
 }
@@ -292,7 +300,7 @@ void servos_thread() {
 
 
   for (int i = 0; i < 4; i ++) {
-    if (servos_goto_pos[i] != servos_pos[i]) {
+    if (servos_goto_pos[i] > servos_pos[i] + 4 || servos_goto_pos[i] < servos_pos[i] - 2 ) {
 
       if (servos_goto_pos[i] > servos_pos[i]) {
         pos_goto_temp = servos_pos[i] + (this_time_servos - last_time_servos) / 5;
