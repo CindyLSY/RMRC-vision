@@ -25,6 +25,11 @@
 // included claw program
 // included interface program for arm manipulation
 
+// v5: (v1 of this file)
+// made arm manipulation possible
+
+// v
+
 //  Letters - motors/servos library;
 
 //  a   - (right)      - driving motor right (positive - forward)
@@ -70,7 +75,7 @@
 
 Servo servos[4];
 int servos_pos[4];  //Bot Mid Swinger  Rotor
-int servos_goto_pos[4] = {190, 180, 93, 180};
+int servos_goto_pos[4] = {180, 180, 93, 180};
 int pos_goto_temp;
 
 //SERIAL COMMUNICATION VARIABLES ////////////////////////
@@ -146,12 +151,22 @@ void setup() {
 
 //----------LOOP--------------------------------------------------------------------------------
 void loop() {
+  
+    servos[0].write(180);
+    servos[1].write(125);
+    servos[2].write(82);
+    delay(2000);
 
+    while(true) {
+      
+    }
+    /*
     delay(15);
     //timeLoopStart = millis();
     read_servos_positions();
     //Activate servos
     servos_thread();
+    */
   
 }
 
@@ -209,6 +224,7 @@ void executeOrder(){
 
       case 'i': // arm xy test
         Serial.println("Arm will be activated");
+        movearm();
         break;
         
       default:
@@ -365,6 +381,66 @@ void servos_thread() {
   last_time_servos = millis();
 }
 
+////////// TWO SERVO CONTROL PROGRAM FOR ARM MANIPULATION ////////////
+void movearm() {
+  alpha = 194-alpha;
+  beta = 178-beta;
+
+  if(alpha > 180) {alpha = 180;}
+  if(alpha < 0) {alpha = 0;}
+  if(beta > 180) {beta = 180;}
+  if(beta < 0) {beta = 0;}
+
+  moveservo(alpha,beta);
+  //servos[2].write(58-beta+alpha);
+  //delay(500);
+}
+
+void moveservo(int n, int m) {
+  Serial.print("values into the function: ");
+  Serial.print(n); Serial.print(", "); Serial.println(m);
+
+  servos[1].write(m);
+  delay(1000);
+  
+  int currval1=servos[0].read();
+  int count1 = abs(currval1-n);
+
+  int currval2=servos[1].read();
+  int count2 = abs(currval2-m);
+
+  for(int t = 0; t<200; t++) {
+
+    // base servo
+    if(t < count1){
+      if(n-currval1 >= 0) {
+      //target is bigger than currval
+      servos[0].write(currval1+t);
+      }
+      else {
+        //target is lower than currval
+        servos[0].write(currval1-t);
+      }
+     }
+
+     // Link servo
+    if(t < count2){
+      if(m-currval2 >= 0) {
+      //target is bigger than currval
+      servos[1].write(currval2+t);
+      }
+      else {
+        //target is lower than currval
+        servos[1].write(currval2-t);
+      }
+     }
+
+    
+    delay(5);
+  }
+  Serial.print("values read from servo: ");
+  Serial.print(servos[0].read()); Serial.print(", "); Serial.println(servos[1].read());
+  }
 
 
 
