@@ -1,4 +1,4 @@
-
+//idea: implement rotate base slider, and WASD for these 3 as redundancy, one for precise angle one for adjustments
 
 //////////////////// HTTP requests to the Flask API /////////////////////////////
 
@@ -58,6 +58,14 @@ document.onkeydown = function(e) {
                 button_pressed = 1;
                 $('#down-btn').css({"background-color":"#007bff","color":"white"});
                 break;
+            case 65://a
+                sendrequest("j",1);
+                break;
+            case 68://d
+                sendrequest("j",2);
+                break;
+            case 87://w
+            case 83://s
         }
     }
 
@@ -82,6 +90,8 @@ document.onkeyup = function(e) {
             sendrequest("b",0);
             button_pressed = 0;
             break;
+        default:
+            sendrequest("j",0);
     }
 };
 
@@ -108,16 +118,16 @@ window.onload = function(e){
                     break;
                 case "rotor-servo-slider":
                     sendrequest("h",this.value);
-		    break;
-		case "y-coordinate-slider":
-		    y_val = this.value;
-		    sendarmrequest();
-    		    break;
+		            break;
+		        case "y-coordinate-slider":
+		            y_val = this.value;
+		            sendarmrequest();
+    		        break;
                 case "x-coordinate-slider":
                     x_val = this.value;
                     sendarmrequest();
                     break; 
-		case "speed-slider":
+		        case "speed-slider":
                     speed = this.value;
                     break;
             }
@@ -146,6 +156,7 @@ window.onload = function(e){
     });
 
 
+    /*
     $('#left_rot').text("Turn Left");
     $('#left_rot').css({"background-color":"white","color":"#007bff"});
 
@@ -163,7 +174,6 @@ window.onload = function(e){
         }
     });
 
-
     $('#right_rot').text("Turn Right");
     	$('#right_rot').css({"background-color":"white","color":"#007bff"});
 
@@ -179,7 +189,7 @@ window.onload = function(e){
             		btn.css({"background-color":"#007bff","color":"white"});
             		btn.text("Turning Right");
         	}
-    	});
+    	});*/
 
 
     $("#datum").click(function(){

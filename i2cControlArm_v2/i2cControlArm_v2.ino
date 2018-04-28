@@ -28,7 +28,12 @@
 // v5: (v1 of this file)
 // made arm manipulation possible
 
-// v
+// v6: 
+// modified the servo control part of the file 
+
+// v7: 
+// Changed the servo pins due to chassis redesign, altered claw function
+
 
 //  Letters - motors/servos library;
 
@@ -50,30 +55,36 @@
 
 
 //MOVING MOTORS ////////////////////////
-#define MOTOR_R_DIR 12
-#define MOTOR_R_ADIR 13
-#define MOTOR_R_PWM 8
+#define MOTOR_R_DIR 36
+#define MOTOR_R_ADIR 38
+#define MOTOR_R_PWM 11
 
-#define MOTOR_L_DIR 10
-#define MOTOR_L_ADIR 11
-#define MOTOR_L_PWM 9
+#define MOTOR_L_DIR 32
+#define MOTOR_L_ADIR 34
+#define MOTOR_L_PWM 10
 
 //CLAW MOTORS
-#define ClawA 28 
-#define ClawB 30
-#define ClawPWM 2
+#define ClawA 15 
+#define ClawB 14
+#define ClawPWM 46
+
+//BASE MOTORS
+#define BaseA 17 
+#define BaseB 16
+#define BasePWM 7
 
 
 //Stand by pin for the tb6621fng motor driver. This must be HIGH to use the claw and roter.
-#define STBY 22
+#define STBY 28
 
 //SERVOS////////////////////////////////
-#define servo_Bot_num 7
-#define servo_Mid_num 6
-#define servo_Swinger_num 5
-#define servo_Rotor_num 4
+#define servo_Bot_num 2
+#define servo_Mid_num 3
+#define servo_Swinger_num 4
+#define servo_Rotor_num 6
+#define servo_Roll_num 5
 
-Servo servos[4];
+Servo servos[5];
 int servos_pos[4];  //Bot Mid Swinger  Rotor
 int servos_goto_pos[4] = {180, 180, 93, 180};
 int pos_goto_temp;
@@ -106,6 +117,13 @@ int alpha = 0; //base servo angle
 int beta = 0; //mid servo angle
 bool is_alpha_in = true; //notify the code when two values have come through
 
+bool order = false; // this boolean will determine whether to call the executeOrder function
+                    // this is here because within the interrupt funciton, delays are useless
+
+int curralpha = 0;
+int currbeta = 0;
+
+
 //----------SETUP--------------------------------------------------------------------------------
 void setup() {
   Serial.begin(115200);
@@ -125,6 +143,11 @@ void setup() {
   pinMode(ClawB, OUTPUT);
   pinMode(ClawPWM, OUTPUT);
 
+  //Base motors
+  pinMode(BaseA, OUTPUT);
+  pinMode(BaseB, OUTPUT);
+  pinMode(BasePWM, OUTPUT);
+
   // STBY
   pinMode(STBY, OUTPUT);
 
@@ -134,9 +157,10 @@ void setup() {
   servos[1].attach(servo_Mid_num);
   servos[2].attach(servo_Swinger_num);
   servos[3].attach(servo_Rotor_num);
+  servos[4].attach(servo_Roll_num);
 
   //delay(2000); //time for servos
-  last_time_servos = millis();//Time for servos speed
+  //last_time_servos = millis();//Time for servos speed
 
   //Communication
   //Begin i2c communication
@@ -151,14 +175,34 @@ void setup() {
 
 //----------LOOP--------------------------------------------------------------------------------
 void loop() {
-  
+    
+    /*digitalWrite(STBY, HIGH);
+    
+    digitalWrite(ClawA, HIGH);
+    digitalWrite(ClawB, LOW);
+    digitalWrite(ClawPWM, HIGH);
+    delay(200);
+    
+    digitalWrite(ClawA, LOW);
+    digitalWrite(ClawB, LOW);
+
+    delay(999999999);
+  */
+    digitalWrite(STBY, HIGH);
+    
     servos[0].write(180);
-    servos[1].write(125);
+    servos[1].write(178);
     servos[2].write(82);
+    servos[3].write(80);
+    servos[4].write(80);
     delay(2000);
 
     while(true) {
-      
+      delay(1);
+      if(order == true) {
+        order = false;
+        executeOrder();
+      }
     }
     /*
     delay(15);
@@ -175,6 +219,7 @@ void loop() {
 ///////////////////////////////////////////////////////////////////
 
 void executeOrder(){
+  
   Serial.print("Executing order: ");
   if(incoming_type != 'i') {
     Serial.print(incoming_type);
@@ -201,43 +246,57 @@ void executeOrder(){
         break;
 
       case 'd':  //(Bot)
+        
         servos_goto_pos[0] = incoming_value;
         break;
 
       case 'e':  //(Mid)
-        servos_goto_pos[1] = incoming_value;
+        servos[2].write(incoming_value);
+        //servos_goto_pos[1] = incoming_value;
         break;
 
       case 'f':  //(Swinger)
-        servos_goto_pos[2] = incoming_value;
+        servos[3].write(incoming_value);
+        //servos_goto_pos[2] = incoming_value;
         break;
 
       case 'g':  //(Claw) Works but the delay() function is not behaving as it should be
         Serial.println("claw mode activated");
+        Serial.println(incoming_value);
+        incoming_type = '*';
         claw(incoming_value);
-        Serial.print("incoming value"); Serial.println(incoming_value);
         break;
         
       case 'h':  //(Rotor)
-        servos_goto_pos[3] = incoming_value;
+        servos[4].write(incoming_value);
+        //servos_goto_pos[3] = incoming_value;
         break;
 
       case 'i': // arm xy test
         Serial.println("Arm will be activated");
+        incoming_type = '*';
         movearm();
+        break;
+
+      case 'j': // base rotor movement
+        Serial.println("base rotor movement activated");
+        incoming_type = '*';
+        base(incoming_value);
         break;
         
       default:
         Serial.println("Incorrect input");
     }
-    incoming_type = '*';
+    if(order == false){
+      incoming_type = '*';
+    }
 }
 
 ///////////////////SERIAL READER///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void ReceiveMassage(int n){
   int value = Wire.read();
-  //Serial.print("value in"); Serial.println(value);
+  Serial.print("Reading value in: "); Serial.println(value);
 
   if(incoming_type == '*'){
     incoming_type = char(value);
@@ -246,7 +305,8 @@ void ReceiveMassage(int n){
     if(incoming_type == 'i') {
       is_alpha_in = false;
     }
-  }else{
+  }
+  else{
     //Serial.println(incoming_type);
 
     // if we are looking at incoming value for the arm angles
@@ -258,8 +318,15 @@ void ReceiveMassage(int n){
       }
       else {
         beta = value;
-        executeOrder();
+        order = true;
+        //order will be executed in the main loop
       }
+    }
+    // if incoming command is for the claw or base
+    else if(incoming_type == 'g' || incoming_type == 'j') {
+      incoming_value = value;
+      order = true;
+      //order will be executed in the main loop
     }
     else {
       if(incoming_type == 'd' ||incoming_type == 'e' ||
@@ -276,6 +343,7 @@ void ReceiveMassage(int n){
       }
       incoming_value = value;
        Serial.print("value processed"); Serial.println(value);
+       //order = true;
       executeOrder();
     }
     
@@ -294,6 +362,7 @@ void drive_controller(boolean motor, int motor_speed) {  //1 - right, o - left
     dir = 0;
     motor_speed = -motor_speed;
   }
+  Serial.println("here");
   if (motor) {
     digitalWrite(MOTOR_R_DIR, (dir ? HIGH : LOW));
     digitalWrite(MOTOR_R_ADIR, (dir ? LOW : HIGH));
@@ -308,21 +377,47 @@ void drive_controller(boolean motor, int motor_speed) {  //1 - right, o - left
 
 ///////////////////CLAW PROGRAM////////////////////////////////////////////////////////////////////////////////////////////////////////
 void claw(boolean dir) {  
-
-  digitalWrite(STBY, HIGH); 
  
   digitalWrite(ClawA, (dir ? LOW : HIGH));
   digitalWrite(ClawB, (dir ? HIGH : LOW));
   analogWrite(ClawPWM,255);
 
-  // not sure why delay function is not working as it is supposed to. 
-  // 10000 roughly corresponds to 100ms. 
-  delay(20000);
+  long t1 = millis();
+  while(millis() - t1 < 200) {
+    if(order == true) {
+      break;
+    }
+  }
   
   digitalWrite(ClawA, LOW); digitalWrite(ClawB, LOW);
-  digitalWrite(STBY, LOW);
 }
 
+///////////////////BASE PROGRAM////////////////////////////////////////////////////////////////////////////////////////////////////////
+void base(int command) {
+
+  Serial.println(command); 
+  switch(command) {
+
+    
+    case 1:
+     Serial.println("here");
+      digitalWrite(BaseA, HIGH); digitalWrite(BaseB, LOW);
+      analogWrite(BasePWM, 200);
+      break;
+    case 2: 
+      digitalWrite(BaseA, LOW); digitalWrite(BaseB, HIGH);
+      analogWrite(BasePWM, 200);
+      break;
+    case 0:
+      digitalWrite(BaseA, LOW); digitalWrite(BaseB, LOW);
+      break;
+    default:
+      digitalWrite(BaseA, LOW); digitalWrite(BaseB, LOW);
+      break;
+  }
+    
+
+}
 
 
 ///////////////////READ POSITIONS AND SEND INFO ABOUT SERVOS ARM///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -355,7 +450,7 @@ void read_servos_positions() {
 
 
 void servos_thread() {
-  this_time_servos = millis();
+  //this_time_servos = millis();
 
 
   for (int i = 0; i < 4; i ++) {
@@ -378,30 +473,36 @@ void servos_thread() {
       servos[i].write(pos_goto_temp);
     }
   }
-  last_time_servos = millis();
+  //last_time_servos = millis();
 }
 
 ////////// TWO SERVO CONTROL PROGRAM FOR ARM MANIPULATION ////////////
 void movearm() {
+
   alpha = 194-alpha;
   beta = 178-beta;
 
   if(alpha > 180) {alpha = 180;}
   if(alpha < 0) {alpha = 0;}
-  if(beta > 180) {beta = 180;}
+  if(beta > 178) {beta = 178;}
   if(beta < 0) {beta = 0;}
 
+  Serial.println("will activate moveservo");
   moveservo(alpha,beta);
-  //servos[2].write(58-beta+alpha);
+
+  // move the 
+  //curralpha = 194-curralpha;
+  //currbeta = 178-currbeta;
+  //servos[2].write(82+currbeta-curralpha);
   //delay(500);
 }
 
+// moving the arm program Inverse kinematics
 void moveservo(int n, int m) {
   Serial.print("values into the function: ");
   Serial.print(n); Serial.print(", "); Serial.println(m);
-
-  servos[1].write(m);
-  delay(1000);
+ 
+  int gpos = 82+n-m;
   
   int currval1=servos[0].read();
   int count1 = abs(currval1-n);
@@ -409,37 +510,99 @@ void moveservo(int n, int m) {
   int currval2=servos[1].read();
   int count2 = abs(currval2-m);
 
-  for(int t = 0; t<200; t++) {
+  int currval3=servos[2].read();
+  int count3 = abs(currval3-gpos);
 
-    // base servo
-    if(t < count1){
-      if(n-currval1 >= 0) {
-      //target is bigger than currval
-      servos[0].write(currval1+t);
+  int tmin_a = 20;
+  int t0_a = 40;
+  int t_a; int x_a = 0;
+
+  int tmin_b = 20;
+  int t0_b = 40;
+  int t_b; int x_b = 0;
+
+  int tmin_c = 20;
+  int t0_c = 30;
+  int t_c; int x_c = 0;
+
+  long a = millis();
+  long b = millis();
+  long c = millis();
+  
+  while(true) {
+    //calculate time FOR A
+    t_a = (4/(pow(count1,2)))*(t0_a-tmin_a)*pow(x_a-(count1/2),2)+tmin_a;
+    //calcualte time for B
+    t_b = (4/(pow(count2,2)))*(t0_b-tmin_b)*pow(x_b-(count2/2),2)+tmin_b;
+    //calcualte time for C
+    t_c = (4/(pow(count3,2)))*(t0_c-tmin_c)*pow(x_c-(count3/2),2)+tmin_c;
+
+
+    if(x_a <= count1) {
+      if(millis() - a < t_a) {
+        if(n-currval1 >= 0) {
+          //target is bigger than currval
+          servos[0].write(currval1+x_a);
+        }
+        else {
+          //target is lower than currval
+          servos[0].write(currval1-x_a);
+        }
       }
       else {
-        //target is lower than currval
-        servos[0].write(currval1-t);
+        x_a+=1;
+        a = millis();
+        //Serial.println(t_a);
       }
-     }
+    }
 
-     // Link servo
-    if(t < count2){
-      if(m-currval2 >= 0) {
-      //target is bigger than currval
-      servos[1].write(currval2+t);
+    if(x_b <= count2) {
+      if(millis() - b < t_b) {
+        if(m-currval2 >= 0) {
+          //target is bigger than currval
+          servos[1].write(currval2+x_b);
+        }
+        else {
+          //target is lower than currval
+          servos[1].write(currval2-x_b);
+        }
       }
       else {
-        //target is lower than currval
-        servos[1].write(currval2-t);
+        x_b+=1;
+        b = millis();
+        //Serial.println(t_b);
       }
-     }
+    }
 
-    
-    delay(5);
+    if(x_c <= count3) {
+      if(millis() - c < t_c) {
+        if(gpos-currval3 >= 0) {
+          //target is bigger than currval
+          servos[2].write(currval3+x_c);
+        }
+        else {
+          //target is lower than currval
+          servos[2].write(currval3-x_c);
+        }
+      }
+      else {
+        x_c+=1;
+        c = millis();
+        //Serial.println(t_b);
+      }
+    }
+
+    if(order == 1) {
+      break;
+    }
+    if(x_a >= count1 && x_b >= count2) {
+      break;
+    }
   }
   Serial.print("values read from servo: ");
-  Serial.print(servos[0].read()); Serial.print(", "); Serial.println(servos[1].read());
+  curralpha=servos[0].read();
+  currbeta=servos[1].read();
+  Serial.print(curralpha); Serial.print(", "); Serial.println(currbeta);
   }
 
 

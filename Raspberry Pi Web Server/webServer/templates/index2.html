@@ -112,7 +112,7 @@
                     </div>
               </div>
               <div class = "row top-buffer">
-                  <img src="http://192.168.0.102:8081/?action=stream" />
+                 <!-- <img src="http://192.168.0.102:8081/?action=stream" />-->  
               </div>
           </div>
         </div>
@@ -123,17 +123,40 @@
           <div class="card-body">
             <div class="container">
               <div class = "row top-buffer">
-                <div class ="col">
-                  Bottom Servo 
-                </div>
-                <div class="col">
-                  <div class="slidercontainer">
-                    <input type="range" min="0" max="180" value="50" class="slider" id="bot-servo-slider">
-                    <div id="bot-servo-value">50</div>
-                      
-                  </div>               
-                </div>
+                  <div class ="col">
+                    Y-coordinate slider
+                  </div>
+                  <div class="col">
+                    <div class="slidercontainer">
+                      <input type="range" min="-5" max="23" value="0" class="slider" id="y-coordinate-slider">
+                      <div id="y-coordinate-value">0</div>
+                    </div>
+                  </div>
               </div>
+
+              <div class = "row top-buffer">
+                  <div class ="col">
+                    X-coordinate slider
+                  </div>
+                  <div class="col">
+                    <div class="slidercontainer">
+                      <input type="range" min="0" max="23" value="0" class="slider" id="x-coordinate-slider">
+                      <div id="x-coordinate-value">0</div>
+                    </div>
+                  </div>
+              </div>
+                <div class = "row top-buffer">
+                  <div class ="col">
+                   Roll Servo 
+                  </div>
+                  <div class="col">
+                    <div class="slidercontainer">
+                      <input type="range" min="0" max="180" value="0" class="slider" id="rotor-servo-slider">
+                      <div id="rotor-servo-value">0</div>
+                    </div>               
+                  </div>
+                </div>
+
               <div class = "row top-buffer">
                 <div class ="col">
                   Tip Angle Servo 
@@ -156,42 +179,8 @@
                     </div>               
                   </div>
                 </div>
-                <div class = "row top-buffer">
-                  <div class ="col">
-                   Roll Servo 
-                  </div>
-                  <div class="col">
-                    <div class="slidercontainer">
-                      <input type="range" min="0" max="180" value="0" class="slider" id="rotor-servo-slider">
-                      <div id="rotor-servo-value">0</div>
-                    </div>               
-                  </div>
-                </div>
 
-                <div class = "row top-buffer">
-                  <div class ="col">
-                    Y-coordinate slider
-                  </div>
-                  <div class="col">
-                    <div class="slidercontainer">
-                      <input type="range" min="-5" max="23" value="0" class="slider" id="y-coordinate-slider">
-                      <div id="y-coordinate-value">0</div>
-                    </div>
-                  </div>
-                </div>
-
-		<div class = "row top-buffer">
-                  <div class ="col">
-                    X-coordinate slider
-                  </div>
-                  <div class="col">
-                    <div class="slidercontainer">
-                      <input type="range" min="0" max="23" value="0" class="slider" id="x-coordinate-slider">
-                      <div id="x-coordinate-value">0</div>
-                    </div>
-                  </div>
-                </div>
-
+                
                 <div class="row top-buffer">
                   <div class="col">
                       <button type="button" class="btn btn-lg btn-outline-primary" id="claw-btn">
@@ -200,7 +189,7 @@
                   </div>
                 </div>
 
-
+                <!--
                 <div class="row top-buffer">
                   <div class="col">
                       <button type="button" class="btn btn-lg btn-outline-primary" id="left_rot">
@@ -211,16 +200,17 @@
                       <button type="button" class="btn btn-lg btn-outline-primary" id="right_rot">
 			Turn Right
                       </button>
-                  </div>
+                  </div>-->
 	
-		  <div class="col">
-		      <button type="button" class="btn btn-lg btn-outline-primary" id="datum">
-			Datum
-		      </button>
-                </div>
+                <div class="row top-buffer">
+		                <div class="col">
+		                  <button type="button" class="btn btn-lg btn-outline-primary" id="datum">
+			                   Datum
+		                  </button>
+                    </div>
 		
-
-            </div>
+                  </div>
+                </div>
           
 
           </div>
