@@ -211,25 +211,7 @@ void setup() {
 
 //----------LOOP--------------------------------------------------------------------------------
 void loop() {
-  digitalWrite(STBY, HIGH);
-  Serial.println(curr_pos);
 
-  base_dir = false;
-  digitalWrite(BaseA, LOW); digitalWrite(BaseB, HIGH);
-      analogWrite(BasePWM, 200);
-  long t = millis(); 
-  while(millis() - t < 600) {
-    count_pos();
-  }
-  
-  Serial.println(curr_pos);
-  digitalWrite(BaseA, LOW); digitalWrite(BaseB, LOW);
-
-  delay(500);
-
-  datum();
-  
-  delay(99999999999);
     
     /*digitalWrite(STBY, HIGH);
     
