@@ -13,6 +13,10 @@ beta = 0
 L1=12.5;
 L2=12;
 
+#popen process object for audio recording
+audio_process = None
+
+
 app = Flask(__name__)
 
 @app.route("/sendarmval",methods=["POST"])
@@ -39,6 +43,62 @@ def send_amrrequest():
     resp.headers['Content-Length'] = len(response_content)
 
     return resp
+
+@app.route("/audiorecording",methods=["GET"])
+def process_audiorecordingrequest():
+    val = request.values.get("recording_on_off")
+
+
+    #If val = 1 => i.e. start recording
+    if (int(val) != 0):
+
+        #if audio_process object exists, check if the process is still running. If it is, don't do anything
+        if audio_process is not None:
+
+            if audio_process.poll() != 0:
+                response_content = 'Audio is still recording!'
+                resp = Response(response_content)    
+                resp.headers['Content-type'] = 'text/plain'
+                resp.headers['Content-Length'] = len(response_content)
+                return resp
+        
+        #audio process object either does not exist  or is not running
+        else:
+
+            #Start audio recording process
+            args = ['arecord',"--device=hw:1,0","--format","S16_LE","--rate","44100","-c1","/home/pi/audio_recordings/test.wav"]
+            audio_process = subprocess.Popen(args)
+            
+            response_content = 'Started Recording Audio'
+            resp = Response(response_content)    
+            resp.headers['Content-type'] = 'text/plain'
+            resp.headers['Content-Length'] = len(response_content)
+            return resp
+
+    #Turn off audio recording
+    elif (int(val) == 0):
+        
+        #check that the audio process exists
+        if audio_process is not None:
+            
+            #kill the process
+            audio_process.terminate()
+
+            response_content = 'Stopped Recording Audio'
+            resp = Response(response_content)    
+            resp.headers['Content-type'] = 'text/plain'
+            resp.headers['Content-Length'] = len(response_content)
+            return resp
+        
+        else:
+            response_content = 'Audio was not started'
+            resp = Response(response_content)    
+            resp.headers['Content-type'] = 'text/plain'
+            resp.headers['Content-Length'] = len(response_content)
+            return resp
+
+
+
 
 @app.route("/send",methods=["POST"])
 def send_request():
