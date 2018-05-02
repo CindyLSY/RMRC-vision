@@ -261,6 +261,7 @@ void loop() {
 void executeOrder(){
   
   Serial.print("Executing order: ");
+  //Stacktrace
   if(incoming_type != 'i') {
     Serial.print(incoming_type);
     Serial.println(incoming_value);
@@ -273,7 +274,6 @@ void executeOrder(){
   }
   switch (incoming_type) {
       case 'a':  //(Right)
-        //Serial.println("you chose a");
         drive_controller(1, incoming_value);
         break;
 
@@ -281,23 +281,17 @@ void executeOrder(){
         drive_controller(0, incoming_value);
         break;
 
-      case 'c':  //(Positioner)
-        //arm_motors_controller(); - to be written - for rotating arm and closing hand (c, g)
-        break;
-
+       //not needed anymore? (Still uses pawels P)
       case 'd':  //(Bot)
-        
         servos_goto_pos[0] = incoming_value;
         break;
 
       case 'e':  //(Mid)
         servos[2].write(incoming_value);
-        //servos_goto_pos[1] = incoming_value;
         break;
 
       case 'f':  //(Swinger)
         servos[3].write(incoming_value);
-        //servos_goto_pos[2] = incoming_value;
         break;
 
       case 'g':  //(Claw) Works but the delay() function is not behaving as it should be
@@ -309,11 +303,10 @@ void executeOrder(){
         
       case 'h':  //(Rotor)
         servos[4].write(incoming_value);
-        //servos_goto_pos[3] = incoming_value;
         break;
 
       case 'i': // arm xy test
-        Serial.println("Arm will be activated");
+        Serial.println("Arm activated");
         incoming_type = '*';
         movearm();
         break;
@@ -325,26 +318,26 @@ void executeOrder(){
         break;
 
       case 'k': // functions using motion control by the gyro called here
-        Serial.println("Gyro control programs called here");
+        Serial.println("Gyro control programs called");
         incoming_type = '*';
-        // call function here 
         MoveStraight(incoming_value);
         break;
         
       default:
         Serial.println("Incorrect input");
-    }
-    if(order == false){
+  }
+  if(order == false){
       incoming_type = '*';
-    }
+  }
 }
 
 ///////////////////SERIAL READER///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void ReceiveMassage(int n){
   int value = Wire.read();
-  Serial.print("Reading value in: "); Serial.println(value);
-
+  Serial.print("Reading value in: ");
+  Serial.println(value);
+  
   //if incoming type is not set, ie: a new message is recieved 
   if(incoming_type == '*'){
     incoming_type = char(value);
@@ -355,8 +348,6 @@ void ReceiveMassage(int n){
     }
   }
   else{
-    //Serial.println(incoming_type);
-
     // if we are looking at incoming value for the arm angles
     if(incoming_type == 'i') {
       if(is_alpha_in == false){
@@ -393,8 +384,9 @@ void ReceiveMassage(int n){
         }
       }
       incoming_value = value;
-       Serial.print("value processed"); Serial.println(value);
-       //order = true;
+      Serial.print("value processed");
+      Serial.println(value);
+      //order = true;
       executeOrder();
     }
     
@@ -436,11 +428,9 @@ void claw(boolean dir) {
   analogWrite(ClawPWM,255);
 
   long t1 = millis();
-  while(millis() - t1 < 200) {
-    //break this loop and go back to main loop, if an order comes through while the claw is in action
-    if(order == true) {
-      break;
-    }
+  //wait for claw to close but interrupt if new command
+  while(millis() - t1 < 200 && order == false) {
+    
   }
   
   digitalWrite(ClawA, LOW); digitalWrite(ClawB, LOW);
@@ -483,13 +473,10 @@ void datum() {
 }
 
 
-// function to move base through incmoing command from RPi
+// function to move base through incoming command from RPi
 void base(int command) {
-
   Serial.println(command); 
   switch(command) {
-
-    
     case 1:
       base_dir = true;
       digitalWrite(BaseA, HIGH); digitalWrite(BaseB, LOW);
@@ -526,127 +513,64 @@ void MoveStraight(int command) {
 
   if(command){
 
-  long t0 = millis();
-  float timeStep = 0.01; // dt
-
-  float prev = integral;
-
-  float kp = 5;
-  float kd = 4;
-
-  float adjust;
-  int leftpow; int rightpow;
-  int basepow = 130;
-
+      long t0 = millis();
+      float timeStep = 0.01; // dt
+    
+      float prev = integral;
+    
+      float kp = 5;
+      float kd = 4;
+    
+      float adjust;
+      int leftpow; int rightpow;
+      int basepow = 130;
+  
       digitalWrite(MOTOR_R_DIR, HIGH);
-    digitalWrite(MOTOR_R_ADIR, LOW);
-        digitalWrite(MOTOR_L_DIR, HIGH);
-    digitalWrite(MOTOR_L_ADIR, LOW);
-// if a new order (command from the RPi) came through, break the loop and go back to main loop
-  while(order == 0) {
-    
-    // put your main code here, to run repeatedly:
-
-    t0 = millis();
-
-    Vector normGyro = mpu.readNormalizeGyro();
-    integral += normGyro.ZAxis*timeStep;
-
-    adjust = integral*kp + (integral - prev)*0.1;
-    leftpow = basepow - adjust; rightpow = basepow + adjust;
-
-    if(leftpow > 255) { leftpow = 255; }
-    if(leftpow < 0) { leftpow = 0;}
-    if(rightpow > 255) { rightpow = 255; }
-    if(rightpow < 0) { rightpow = 0;}
-
-    analogWrite(MOTOR_R_PWM, rightpow);
-    analogWrite(MOTOR_L_PWM, leftpow);
-    
-    prev = integral;
-    
-    Serial.print("integral: "); Serial.print(integral); Serial.print("  power (left, right):  ");
-    Serial.print(leftpow); Serial.print(" "); 
-    Serial.print(rightpow); Serial.print(" "); 
-    Serial.print(adjust); Serial.println(" "); 
-    delay((timeStep*1000)-(millis()-t0));
-    
+      digitalWrite(MOTOR_R_ADIR, LOW);
+      digitalWrite(MOTOR_L_DIR, HIGH);
+      digitalWrite(MOTOR_L_ADIR, LOW);
+      // if a new order (command from the RPi) came through, break the loop and go back to main loop
+      while(order == 0) {
+  
+          t0 = millis();
+      
+          Vector normGyro = mpu.readNormalizeGyro();
+          integral += normGyro.ZAxis*timeStep;
+      
+          adjust = integral*kp + (integral - prev)*0.1;
+          leftpow = basepow - adjust; rightpow = basepow + adjust;
+      
+          if(leftpow > 255) { leftpow = 255; }
+          if(leftpow < 0) { leftpow = 0;}
+          if(rightpow > 255) { rightpow = 255; }
+          if(rightpow < 0) { rightpow = 0;}
+      
+          analogWrite(MOTOR_R_PWM, rightpow);
+          analogWrite(MOTOR_L_PWM, leftpow);
+          
+          prev = integral;
+          
+          Serial.print("integral: "); Serial.print(integral); Serial.print("  power (left, right):  ");
+          Serial.print(leftpow); Serial.print(" "); 
+          Serial.print(rightpow); Serial.print(" "); 
+          Serial.print(adjust); Serial.println(" "); 
+          delay((timeStep*1000)-(millis()-t0));
+      
+      }
   }
-
-    digitalWrite(MOTOR_R_DIR, LOW);
-    digitalWrite(MOTOR_R_ADIR, LOW);
-    digitalWrite(MOTOR_L_DIR, LOW);
-    digitalWrite(MOTOR_L_ADIR, LOW);
-
-  }
-  else {
-    digitalWrite(MOTOR_R_DIR, LOW);
-    digitalWrite(MOTOR_R_ADIR, LOW);
-    digitalWrite(MOTOR_L_DIR, LOW);
-    digitalWrite(MOTOR_L_ADIR, LOW);
+    //anyway, if command 0 or finished due to break, turn everything off.
+   digitalWrite(MOTOR_R_DIR, LOW);
+   digitalWrite(MOTOR_R_ADIR, LOW);
+   digitalWrite(MOTOR_L_DIR, LOW);
+   digitalWrite(MOTOR_L_ADIR, LOW);
   }
   
 }
 
 /* More programs using the gyroscope can and probably should be made. 
- *  Ideas include such as but not limited to: turning 90 degrees shifting horisonal position by x(cm), Seeing how the "push" mechanism changed the relative angle of the robot
+ *  Ideas include such as but not limited to: turning 90 degrees shifting horizontal position by x(cm), Seeing how the "push" mechanism changed the relative angle of the robot
  */
 
-///////////////////READ POSITIONS AND SEND INFO ABOUT SERVOS ARM///////////////////////////////////////////////////////////////////////////////////////////////////////////
-void read_servos_positions() {
-  servos_pos[0] = servos[0].read();
-  servos_pos[1] = servos[1].read();
-  servos_pos[2] = servos[2].read();
-  servos_pos[3] = servos[3].read();
-
-  /*
-  Serial.println("Bot Mid Swinger Rotor");
-  Serial.print(servos_pos[0]);
-  Serial.print("  ");
-  Serial.print(servos_pos[1]);
-  Serial.print("  ");
-  Serial.print(servos_pos[2]);
-  Serial.print("  ");
-  Serial.println(servos_pos[3]);
-
-  Serial.print(servos_goto_pos[0]);
-  Serial.print("  ");
-  Serial.print(servos_goto_pos[1]);
-  Serial.print("  ");
-  Serial.print(servos_goto_pos[2]);
-  Serial.print("  ");
-  Serial.println(servos_goto_pos[3]);
-
-  */
-}
-
-// Pawel's program on servo control
-void servos_thread() {
-  //this_time_servos = millis();
-
-
-  for (int i = 0; i < 4; i ++) {
-    if (servos_goto_pos[i] > servos_pos[i] + 4 || servos_goto_pos[i] < servos_pos[i] - 2 ) {
-
-      if (servos_goto_pos[i] > servos_pos[i]) {
-        pos_goto_temp = servos_pos[i] + (this_time_servos - last_time_servos) / 5;
-        if (pos_goto_temp > servos_goto_pos[i]) {
-          pos_goto_temp = servos_goto_pos[i];
-        }
-      }
-
-      if (servos_goto_pos[i] < servos_pos[i]) {
-        pos_goto_temp = servos_pos[i] - (this_time_servos - last_time_servos) / 5;
-        if (pos_goto_temp < servos_goto_pos[i]) {
-          pos_goto_temp = servos_goto_pos[i];
-        }
-      }
-
-      servos[i].write(pos_goto_temp);
-    }
-  }
-  //last_time_servos = millis();
-}
 
 ////////// TWO SERVO CONTROL PROGRAM FOR ARM MANIPULATION ///////////////////////////////////////////////////////////////////////////////////////////////////
 void movearm() {
@@ -665,7 +589,7 @@ void movearm() {
   if(beta < 0) {beta = 0;}
 
   Serial.println("will activate moveservo");
-  moveservo(alpha,beta);
+  moveservoXY(alpha,beta);
 
 }
 
@@ -680,13 +604,13 @@ void movearm() {
  * 
  * To make the movement even more smoother, the program will change the 
  * amount of delay between angles depending of the relative position 
- * of the servo, so that the the servo rotates slowly at the beggining 
+ * of the servo, so that the the servo rotates slowly at the beginning 
  * and the end of the rotation process, while moving fast in between.
  * 
  * To achieve this, the amount of delay at each degree interval is a quadratic
  * function of the relative position. 
   */
-void moveservo(int n, int m) {
+void moveservoXY(int n, int m) {
 
   // n = the angle fed into the first servo i.e.: alpha. 
   // m = the angle fed into the sercond servo i.e.: beta.
@@ -727,8 +651,9 @@ void moveservo(int n, int m) {
   long a = millis();
   long b = millis();
   long c = millis();
-  
-  while(true) {
+
+  //while no new input and while hasn t arrived at final state
+  while(order == 0 && !(x_a >= count1 && x_b >= count2 && x_c >= count3)) {
     // Calculate the delay time for each servo. 
     
     //calculate time FOR A
@@ -795,16 +720,6 @@ void moveservo(int n, int m) {
         //Serial.println(t_b);
       }
     }
-
-    // if a new order (command from the RPi) came through, break the loop and go back to main loop
-    if(order == 1) {
-      break;
-    }
-
-    // if all the servos have ended its movement, break the loop.
-    if(x_a >= count1 && x_b >= count2 && x_c >= count3) {
-      break;
-    }
   }
   Serial.print("values read from servo: ");
   curralpha=servos[0].read();
@@ -813,4 +728,61 @@ void moveservo(int n, int m) {
   }
 
 
+//////////////////////GRAVEYARD/////////////////////////
 
+//also not used right now
+///////////////////READ POSITIONS AND SEND INFO ABOUT SERVOS ARM///////////////////////////////////////////////////////////////////////////////////////////////////////////
+void read_servos_positions() {
+  servos_pos[0] = servos[0].read();
+  servos_pos[1] = servos[1].read();
+  servos_pos[2] = servos[2].read();
+  servos_pos[3] = servos[3].read();
+
+  /*
+  Serial.println("Bot Mid Swinger Rotor");
+  Serial.print(servos_pos[0]);
+  Serial.print("  ");
+  Serial.print(servos_pos[1]);
+  Serial.print("  ");
+  Serial.print(servos_pos[2]);
+  Serial.print("  ");
+  Serial.println(servos_pos[3]);
+
+  Serial.print(servos_goto_pos[0]);
+  Serial.print("  ");
+  Serial.print(servos_goto_pos[1]);
+  Serial.print("  ");
+  Serial.print(servos_goto_pos[2]);
+  Serial.print("  ");
+  Serial.println(servos_goto_pos[3]);
+
+  */
+}
+
+// Pawel's program on servo control
+void servos_thread() {
+  //this_time_servos = millis();
+
+
+  for (int i = 0; i < 4; i ++) {
+    if (servos_goto_pos[i] > servos_pos[i] + 4 || servos_goto_pos[i] < servos_pos[i] - 2 ) {
+
+      if (servos_goto_pos[i] > servos_pos[i]) {
+        pos_goto_temp = servos_pos[i] + (this_time_servos - last_time_servos) / 5;
+        if (pos_goto_temp > servos_goto_pos[i]) {
+          pos_goto_temp = servos_goto_pos[i];
+        }
+      }
+
+      if (servos_goto_pos[i] < servos_pos[i]) {
+        pos_goto_temp = servos_pos[i] - (this_time_servos - last_time_servos) / 5;
+        if (pos_goto_temp < servos_goto_pos[i]) {
+          pos_goto_temp = servos_goto_pos[i];
+        }
+      }
+
+      servos[i].write(pos_goto_temp);
+    }
+  }
+  //last_time_servos = millis();
+}
