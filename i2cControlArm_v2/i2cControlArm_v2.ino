@@ -212,6 +212,9 @@ void setup() {
 //----------LOOP--------------------------------------------------------------------------------
 void loop() {
 
+
+  MoveStraight();
+
     
     /*digitalWrite(STBY, HIGH);
     
@@ -235,9 +238,8 @@ void loop() {
     delay(2000);
 
     while(true) {
-      if(base_moving = true) {
-        count_pos();
-      }
+       // count position of base rotor for arm
+       count_pos();
       
       if(order == true) {
         order = false;
@@ -520,9 +522,37 @@ void gyro_calib() {
 }
 
 
-float MoveStraight() {
+void MoveStraight() {
   // this part of the program must be made
+  
+  long t0 = millis();
+  float timeStep = 0.01; // dt
 
+  float prev = integral;
+
+  float kp = 0.5;
+  float kd = 0.1;
+
+  float adjust;
+  int leftpow; int rightpow;
+  int basepow = 160;
+
+  while(true) {
+    
+    // put your main code here, to run repeatedly:
+
+    t0 = millis();
+
+    Vector normGyro = mpu.readNormalizeGyro();
+    integral += normGyro.ZAxis*timeStep;
+
+    adjust = integral*kp + (integral - prev)*0.1;
+    leftpow = basepow - adjust; rightpow = basepow + adjust;
+    Serial.print("integral: "); Serial.print(integral); Serial.print("  power (left, right):  ");
+    Serial.println(leftpow, rightpow);
+    delay((timeStep*1000)-(millis()-t0));
+    prev = integral;
+  }
   
 }
 
@@ -587,7 +617,7 @@ void servos_thread() {
 }
 
 ////////// TWO SERVO CONTROL PROGRAM FOR ARM MANIPULATION ///////////////////////////////////////////////////////////////////////////////////////////////////
-
+void movearm() {
   // alpha = angle of first servo     beta = angle of second servo
   // first servo is the one on the base of the arm
 
