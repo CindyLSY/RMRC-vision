@@ -213,8 +213,6 @@ void setup() {
 void loop() {
 
 
-  MoveStraight();
-
     
     /*digitalWrite(STBY, HIGH);
     
@@ -329,7 +327,8 @@ void executeOrder(){
       case 'k': // functions using motion control by the gyro called here
         Serial.println("Gyro control programs called here");
         incoming_type = '*';
-        // call function here
+        // call function here 
+        MoveStraight(incoming_value);
         break;
         
       default:
@@ -522,22 +521,29 @@ void gyro_calib() {
 }
 
 
-void MoveStraight() {
+void MoveStraight(int command) {
   // this part of the program must be made
-  
+
+  if(command){
+
   long t0 = millis();
   float timeStep = 0.01; // dt
 
   float prev = integral;
 
-  float kp = 0.5;
-  float kd = 0.1;
+  float kp = 5;
+  float kd = 4;
 
   float adjust;
   int leftpow; int rightpow;
-  int basepow = 160;
+  int basepow = 130;
 
-  while(true) {
+      digitalWrite(MOTOR_R_DIR, HIGH);
+    digitalWrite(MOTOR_R_ADIR, LOW);
+        digitalWrite(MOTOR_L_DIR, HIGH);
+    digitalWrite(MOTOR_L_ADIR, LOW);
+// if a new order (command from the RPi) came through, break the loop and go back to main loop
+  while(order == 0) {
     
     // put your main code here, to run repeatedly:
 
@@ -548,10 +554,36 @@ void MoveStraight() {
 
     adjust = integral*kp + (integral - prev)*0.1;
     leftpow = basepow - adjust; rightpow = basepow + adjust;
-    Serial.print("integral: "); Serial.print(integral); Serial.print("  power (left, right):  ");
-    Serial.println(leftpow, rightpow);
-    delay((timeStep*1000)-(millis()-t0));
+
+    if(leftpow > 255) { leftpow = 255; }
+    if(leftpow < 0) { leftpow = 0;}
+    if(rightpow > 255) { rightpow = 255; }
+    if(rightpow < 0) { rightpow = 0;}
+
+    analogWrite(MOTOR_R_PWM, rightpow);
+    analogWrite(MOTOR_L_PWM, leftpow);
+    
     prev = integral;
+    
+    Serial.print("integral: "); Serial.print(integral); Serial.print("  power (left, right):  ");
+    Serial.print(leftpow); Serial.print(" "); 
+    Serial.print(rightpow); Serial.print(" "); 
+    Serial.print(adjust); Serial.println(" "); 
+    delay((timeStep*1000)-(millis()-t0));
+    
+  }
+
+    digitalWrite(MOTOR_R_DIR, LOW);
+    digitalWrite(MOTOR_R_ADIR, LOW);
+    digitalWrite(MOTOR_L_DIR, LOW);
+    digitalWrite(MOTOR_L_ADIR, LOW);
+
+  }
+  else {
+    digitalWrite(MOTOR_R_DIR, LOW);
+    digitalWrite(MOTOR_R_ADIR, LOW);
+    digitalWrite(MOTOR_L_DIR, LOW);
+    digitalWrite(MOTOR_L_ADIR, LOW);
   }
   
 }
