@@ -16,6 +16,10 @@ function collectSensorValues(){
     });
 }
 
+function sendaudiorequest(recording_on_off_selector){
+    $.post("/audiorecording",{recording_on_off : recording_on_off_selector}, function(data){alert(data);});
+}
+
 ////////////////// Handle the arror keystrokes to drive the robot /////////////////////
 
 var button_pressed = 0;
@@ -203,6 +207,15 @@ window.onload = function(e){
     });
 
     //setInterval(function(){collectSensorValues();},3000);
+
+    $("#audio_recording_on_btn").click(function(){
+        sendaudiorequest(1);
+    });
+
+    $("#audio_recording_off_btn").click(function(){
+        sendaudiorequest(0);
+    });
+
 
 }
 

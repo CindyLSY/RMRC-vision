@@ -1,9 +1,13 @@
-from flask import Flask,render_template,request,Response,jsonify
+from flask import Flask,render_template,request,Response,jsonify,send_file
 import json
 
 import smbus
 import time
 import math
+
+import subprocess
+
+import os
 
 #angles of the servo
 alpha = 0
@@ -13,7 +17,7 @@ beta = 0
 L1=12.5;
 L2=12;
 
-#popen process object for audio recording
+#global popen process object for audio recording
 audio_process = None
 
 
@@ -44,10 +48,14 @@ def send_amrrequest():
 
     return resp
 
-@app.route("/audiorecording",methods=["GET"])
+@app.route("/audiorecording",methods=["POST"])
 def process_audiorecordingrequest():
     val = request.values.get("recording_on_off")
 
+    global audio_process
+
+    current_directory_path = os.path.dirname(os.path.realpath(__file__))
+    file_path = current_directory_path+"/static/audio_recording.wav"
 
     #If val = 1 => i.e. start recording
     if (int(val) != 0):
@@ -55,7 +63,7 @@ def process_audiorecordingrequest():
         #if audio_process object exists, check if the process is still running. If it is, don't do anything
         if audio_process is not None:
 
-            if audio_process.poll() != 0:
+            if audio_process.poll() > 0:
                 response_content = 'Audio is still recording!'
                 resp = Response(response_content)    
                 resp.headers['Content-type'] = 'text/plain'
@@ -63,17 +71,22 @@ def process_audiorecordingrequest():
                 return resp
         
         #audio process object either does not exist  or is not running
-        else:
+        #Start audio recording process
 
-            #Start audio recording process
-            args = ['arecord',"--device=hw:1,0","--format","S16_LE","--rate","44100","-c1","/home/pi/audio_recordings/test.wav"]
-            audio_process = subprocess.Popen(args)
-            
-            response_content = 'Started Recording Audio'
-            resp = Response(response_content)    
-            resp.headers['Content-type'] = 'text/plain'
-            resp.headers['Content-Length'] = len(response_content)
-            return resp
+        #if the file exists delete it first and overwrite it.
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+        #to find the device number, run sudo arecord -l
+
+        args = ['arecord',"--device=hw:1,0","--format","S16_LE","--rate","44100","-c1",file_path]
+        audio_process = subprocess.Popen(args)
+        
+        response_content = 'Started Recording Audio to ' + file_path
+        resp = Response(response_content)    
+        resp.headers['Content-type'] = 'text/plain'
+        resp.headers['Content-Length'] = len(response_content)
+        return resp
 
     #Turn off audio recording
     elif (int(val) == 0):
@@ -83,8 +96,9 @@ def process_audiorecordingrequest():
             
             #kill the process
             audio_process.terminate()
-
-            response_content = 'Stopped Recording Audio'
+            audio_process.kill()
+            
+            response_content = 'Stopped Recording Audio to ' + file_path
             resp = Response(response_content)    
             resp.headers['Content-type'] = 'text/plain'
             resp.headers['Content-Length'] = len(response_content)
@@ -96,8 +110,20 @@ def process_audiorecordingrequest():
             resp.headers['Content-type'] = 'text/plain'
             resp.headers['Content-Length'] = len(response_content)
             return resp
+    
+    else:
+        response_content = 'Request value not recognized'
+        resp = Response(response_content)    
+        resp.headers['Content-type'] = 'text/plain'
+        resp.headers['Content-Length'] = len(response_content)
+        return resp
 
-
+#serve the current audio recording
+@app.route("/audiorecordingfile")
+def return_audio_recording_file():
+    current_directory_path = os.path.dirname(os.path.realpath(__file__))
+    file_path = current_directory_path+"/static/audio_recording.wav"
+    return send_file(file_path)
 
 
 @app.route("/send",methods=["POST"])
