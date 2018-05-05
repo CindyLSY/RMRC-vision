@@ -145,6 +145,10 @@ int prev_state = 0;
 bool base_dir = true; // left = true, right = false
 
 
+// variables for gyroscope functions
+bool straight = false;
+
+
 //----------SETUP--------------------------------------------------------------------------------
 void setup() {
   Serial.begin(115200);
@@ -241,7 +245,22 @@ void loop() {
       
       if(order == true) {
         order = false;
-        executeOrder();
+        if(incoming_type != 'k'){
+          executeOrder();
+        }
+        // if order is 'k' = going straight
+        else {
+
+          incoming_type = '*';
+          
+          // if program is currently not running but 
+          if(straight == false && incoming_value == 1) {
+            straight = true;
+            MoveStraight();
+          }
+        
+        }
+        
       }
     }
     /*
@@ -317,12 +336,14 @@ void executeOrder(){
         base(incoming_value);
         break;
 
+      /*
       case 'k': // functions using motion control by the gyro called here
         Serial.println("Gyro control programs called");
         incoming_type = '*';
         MoveStraight(incoming_value);
         break;
-        
+      */
+       
       default:
         Serial.println("Incorrect input");
   }
@@ -363,7 +384,20 @@ void ReceiveMassage(int n){
         order = true;  
       }
     }
-    // if incoming command is for the claw, base, or move straight
+
+    // if incmoing command is for going straight
+    else if(incoming_type == 'k') {
+      incoming_value = value;
+
+      if(incoming_value == 1) {
+        order = true;
+      }
+      else {
+        straight = false;
+        incoming_type = '*';
+      }
+    }
+    // if incoming command is for the claw or base
     else if(incoming_type == 'g' || incoming_type == 'j' || incoming_type == 'k') {
       incoming_value = value;
      
@@ -508,10 +542,9 @@ void gyro_calib() {
 }
 
 
-void MoveStraight(int command) {
+void MoveStraight() {
   // this part of the program must be made
 
-  if(command){
 
       long t0 = millis();
       float timeStep = 0.01; // dt
@@ -530,7 +563,7 @@ void MoveStraight(int command) {
       digitalWrite(MOTOR_L_DIR, HIGH);
       digitalWrite(MOTOR_L_ADIR, LOW);
       // if a new order (command from the RPi) came through, break the loop and go back to main loop
-      while(order == 0) {
+      while(straight) {
   
           t0 = millis();
       
@@ -557,13 +590,18 @@ void MoveStraight(int command) {
           delay((timeStep*1000)-(millis()-t0));
       
       }
-  }
+
+  Serial.println("ending loop");
+  Serial.println(straight);
     //anyway, if command 0 or finished due to break, turn everything off.
    digitalWrite(MOTOR_R_DIR, LOW);
    digitalWrite(MOTOR_R_ADIR, LOW);
    digitalWrite(MOTOR_L_DIR, LOW);
    digitalWrite(MOTOR_L_ADIR, LOW);
-  }
+
+
+  
+ 
   
 }
 
