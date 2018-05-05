@@ -6,7 +6,6 @@ import time
 import math
 
 import subprocess
-
 import os
 
 #angles of the servo
@@ -72,14 +71,13 @@ def process_audiorecordingrequest():
         
         #audio process object either does not exist  or is not running
         #Start audio recording process
-
         #if the file exists delete it first and overwrite it.
         if os.path.exists(file_path):
             os.remove(file_path)
 
         #to find the device number, run sudo arecord -l
 
-        args = ['arecord',"--device=hw:1,0","--format","S16_LE","--rate","44100","-c1",file_path]
+        args = ['arecord',"--device=hw:1,0","--format","S16_LE","--rate","48000",file_path]
         audio_process = subprocess.Popen(args)
         
         response_content = 'Started Recording Audio to ' + file_path
