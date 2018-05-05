@@ -213,6 +213,21 @@ void setup() {
   Wire.onRequest(RequestMassage);
 }
 
+//var declaration for straight
+long t0 = millis();
+      float timeStep = 0.01; // dt
+    
+      float prev = integral;
+    
+      float kp = 5;
+      float kd = 4;
+    
+      float adjust;
+      int leftpow; int rightpow;
+      int basepow = 130;
+      boolean changeStraight = false;
+      
+
 //----------LOOP--------------------------------------------------------------------------------
 void loop() {
 
@@ -248,19 +263,35 @@ void loop() {
         if(incoming_type != 'k'){
           executeOrder();
         }
-        // if order is 'k' = going straight
-        else {
-
+        
+      }
+      if(straight){
+        Serial.println("Straight!");
+      }
+      if(changeStraight){
+        Serial.print("Chaaaaaaaaaaaaaange");
+      }
+      if(straight && changeStraight){
+        t0 = millis();
+        digitalWrite(MOTOR_R_DIR, HIGH);
+        digitalWrite(MOTOR_R_ADIR, LOW);
+        digitalWrite(MOTOR_L_DIR, HIGH);
+        digitalWrite(MOTOR_L_ADIR, LOW);
+        changeStraight = false;
+        incoming_type = '*';
+      }
+      else if(straight){
+        adaptPosition();
+        Serial.println("Adapted position");
+      }else if(changeStraight){
           incoming_type = '*';
-          
-          // if program is currently not running but 
-          if(straight == false && incoming_value == 1) {
-            straight = true;
-            MoveStraight();
-          }
-        
-        }
-        
+          Serial.println("ending loop");
+          //anyway, if command 0 or finished due to break, turn everything off.
+         digitalWrite(MOTOR_R_DIR, LOW);
+         digitalWrite(MOTOR_R_ADIR, LOW);
+         digitalWrite(MOTOR_L_DIR, LOW);
+         digitalWrite(MOTOR_L_ADIR, LOW);
+         changeStraight = false;
       }
     }
     /*
@@ -276,6 +307,34 @@ void loop() {
 ///////////////////////////////////////////////////////////////////
 /////////////////////FUNCTIONS/////////////////////////////////////
 ///////////////////////////////////////////////////////////////////
+
+void adaptPosition(){
+
+  t0 = millis();
+  Vector normGyro = mpu.readNormalizeGyro();
+          integral += normGyro.ZAxis*timeStep;
+      
+          adjust = integral*kp + (integral - prev)*0.1;
+          leftpow = basepow - adjust; rightpow = basepow + adjust;
+      
+          if(leftpow > 255) { leftpow = 255; }
+          if(leftpow < 0) { leftpow = 0;}
+          if(rightpow > 255) { rightpow = 255; }
+          if(rightpow < 0) { rightpow = 0;}
+      
+          analogWrite(MOTOR_R_PWM, rightpow);
+          analogWrite(MOTOR_L_PWM, leftpow);
+          
+          prev = integral;
+          
+          Serial.print("integral: "); Serial.print(integral); Serial.print("  power (left, right):  ");
+          Serial.print(leftpow); Serial.print(" "); 
+          Serial.print(rightpow); Serial.print(" "); 
+          Serial.print(adjust); Serial.println(" "); 
+          delay((timeStep*1000)-(millis()-t0));
+         
+      
+}
 
 void executeOrder(){
   
@@ -298,11 +357,6 @@ void executeOrder(){
 
       case 'b':  //(Left)
         drive_controller(0, incoming_value);
-        break;
-
-       //not needed anymore? (Still uses pawels P)
-      case 'd':  //(Bot)
-        servos_goto_pos[0] = incoming_value;
         break;
 
       case 'e':  //(Mid)
@@ -345,7 +399,7 @@ void executeOrder(){
       */
        
       default:
-        Serial.println("Incorrect input");
+        Serial.print("Incorrect input"); Serial.println(incoming_type);
   }
   if(order == false){
       incoming_type = '*';
@@ -385,20 +439,23 @@ void ReceiveMassage(int n){
       }
     }
 
-    // if incmoing command is for going straight
+    // if incoming command is for going straight
     else if(incoming_type == 'k') {
       incoming_value = value;
-
+      changeStraight = true;
       if(incoming_value == 1) {
         order = true;
+        straight = true;
       }
       else {
+        order = true;
         straight = false;
         incoming_type = '*';
       }
+      Serial.println("changedstraight on");
     }
     // if incoming command is for the claw or base
-    else if(incoming_type == 'g' || incoming_type == 'j' || incoming_type == 'k') {
+    else if(incoming_type == 'g' || incoming_type == 'j') {
       incoming_value = value;
      
       //order will be executed in the main loop
@@ -539,70 +596,6 @@ void gyro_calib() {
   mpu.calibrateGyro();
   mpu.setThreshold(3);
   integral = 0;
-}
-
-
-void MoveStraight() {
-  // this part of the program must be made
-
-
-      long t0 = millis();
-      float timeStep = 0.01; // dt
-    
-      float prev = integral;
-    
-      float kp = 5;
-      float kd = 4;
-    
-      float adjust;
-      int leftpow; int rightpow;
-      int basepow = 130;
-  
-      digitalWrite(MOTOR_R_DIR, HIGH);
-      digitalWrite(MOTOR_R_ADIR, LOW);
-      digitalWrite(MOTOR_L_DIR, HIGH);
-      digitalWrite(MOTOR_L_ADIR, LOW);
-      // if a new order (command from the RPi) came through, break the loop and go back to main loop
-      while(straight) {
-  
-          t0 = millis();
-      
-          Vector normGyro = mpu.readNormalizeGyro();
-          integral += normGyro.ZAxis*timeStep;
-      
-          adjust = integral*kp + (integral - prev)*0.1;
-          leftpow = basepow - adjust; rightpow = basepow + adjust;
-      
-          if(leftpow > 255) { leftpow = 255; }
-          if(leftpow < 0) { leftpow = 0;}
-          if(rightpow > 255) { rightpow = 255; }
-          if(rightpow < 0) { rightpow = 0;}
-      
-          analogWrite(MOTOR_R_PWM, rightpow);
-          analogWrite(MOTOR_L_PWM, leftpow);
-          
-          prev = integral;
-          
-          Serial.print("integral: "); Serial.print(integral); Serial.print("  power (left, right):  ");
-          Serial.print(leftpow); Serial.print(" "); 
-          Serial.print(rightpow); Serial.print(" "); 
-          Serial.print(adjust); Serial.println(" "); 
-          delay((timeStep*1000)-(millis()-t0));
-      
-      }
-
-  Serial.println("ending loop");
-  Serial.println(straight);
-    //anyway, if command 0 or finished due to break, turn everything off.
-   digitalWrite(MOTOR_R_DIR, LOW);
-   digitalWrite(MOTOR_R_ADIR, LOW);
-   digitalWrite(MOTOR_L_DIR, LOW);
-   digitalWrite(MOTOR_L_ADIR, LOW);
-
-
-  
- 
-  
 }
 
 /* More programs using the gyroscope can and probably should be made. 
