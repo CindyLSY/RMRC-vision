@@ -113,7 +113,6 @@ unsigned long this_time_servos, last_time_servos;
 
 
 //MPU6050 stuff. For gyroscope
-#include <Wire.h>
 #include <MPU6050.h>
 
 MPU6050 mpu;
@@ -215,7 +214,7 @@ void setup() {
 
 //var declaration for straight
 long t0 = millis();
-      float timeStep = 0.01; // dt
+      float timeStep = 0.02; // dt
     
       float prev = integral;
     
@@ -224,7 +223,7 @@ long t0 = millis();
     
       float adjust;
       int leftpow; int rightpow;
-      int basepow = 130;
+      int basepow = 90;
       boolean changeStraight = false;
       
 
@@ -281,6 +280,7 @@ void loop() {
         incoming_type = '*';
       }
       else if(straight){
+        Serial.print("Adapting!!");
         adaptPosition();
         Serial.println("Adapted position");
       }else if(changeStraight){
@@ -311,7 +311,11 @@ void loop() {
 void adaptPosition(){
 
   t0 = millis();
+  Serial.print("here!!");
+  Wire.beginTransmission(0x68);
   Vector normGyro = mpu.readNormalizeGyro();
+  Wire.endTransmission(0x68);
+  Serial.print("here!!");
           integral += normGyro.ZAxis*timeStep;
       
           adjust = integral*kp + (integral - prev)*0.1;
@@ -324,7 +328,10 @@ void adaptPosition(){
       
           analogWrite(MOTOR_R_PWM, rightpow);
           analogWrite(MOTOR_L_PWM, leftpow);
-          
+         /*
+          analogWrite(MOTOR_R_PWM, 100);
+          analogWrite(MOTOR_L_PWM, 100);
+          */
           prev = integral;
           
           Serial.print("integral: "); Serial.print(integral); Serial.print("  power (left, right):  ");
@@ -441,6 +448,7 @@ void ReceiveMassage(int n){
 
     // if incoming command is for going straight
     else if(incoming_type == 'k') {
+      Serial.println("straight command received");
       incoming_value = value;
       changeStraight = true;
       if(incoming_value == 1) {
