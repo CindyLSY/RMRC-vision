@@ -20,6 +20,38 @@ function sendaudiorequest(recording_on_off_selector){
     $.post("/audiorecording",{recording_on_off : recording_on_off_selector}, function(data){alert(data);});
 }
 
+function increaseX(){
+    if(x_val<22){
+        x_val = x_val+2;
+        $('#x-coordinate-slider').attr("value", x_val.toString());
+        $('#x-coordinate-value').text(x_val);
+        sendarmrequest();
+    }
+}
+function decreaseX(){
+    if(x_val>1 && (y_val>=0 || x_val>11)){
+        x_val = x_val-2;
+        $('#x-coordinate-slider').attr("value", x_val.toString());
+        $('#x-coordinate-value').text(x_val);
+        sendarmrequest();
+    }
+}
+function increaseY(){
+    if(y_val<21){
+        y_val = y_val+2;
+        $('#y-coordinate-slider').attr("value", y_val.toString());
+        $('#y-coordinate-value').text(y_val);
+        sendarmrequest();
+    }
+}
+function decreaseY(){
+    if((x_val>=9 && y_val>-5) || (y_val>1)){
+        y_val = y_val-2;
+        $('#y-coordinate-slider').attr("value", y_val.toString());
+        $('#y-coordinate-value').text(y_val);
+        sendarmrequest();
+    }
+}
 ////////////////// Handle the arror keystrokes to drive the robot /////////////////////
 
 var button_pressed = 0;
@@ -29,7 +61,10 @@ var y_val = 0;
 var x_val = 0;
 var y_inc = 1;
 var x_inc = 1;
-
+var incX;
+var decX;
+var incY;
+var decY;
 document.onkeydown = function(e) {
 
     if (button_pressed === 0){
@@ -63,18 +98,40 @@ document.onkeydown = function(e) {
                 $('#down-btn').css({"background-color":"#007bff","color":"white"});
                 break;
 	    case 76://l
-		button_pressed = 1;
-		e.preventDefault();
-		sendrequest("k",1);
-		break;
-            case 65://a
+        		button_pressed = 1;
+        		e.preventDefault();
+        		sendrequest("k",1);
+		      break;
+        case 81:// q
+                button_pressed = 1;
+                e.preventDefault();
                 sendrequest("j",1);
                 break;
-            case 68://d
+        case 69: //e
+                button_pressed = 1;
+                e.preventDefault();
                 sendrequest("j",2);
                 break;
-            case 87://w
-            case 83://s
+        case 68://a
+                button_pressed = 1;
+                e.preventDefault();
+                incX = setInterval(increaseX, 500);
+                break;
+        case 65://d
+                button_pressed = 1;
+                e.preventDefault();
+                decX = setInterval(decreaseX, 500);
+                break;
+        case 87://w
+                button_pressed = 1;
+                e.preventDefault();
+                incY = setInterval(increaseY, 500);
+                break;
+        case 83://s
+                button_pressed = 1;
+                e.preventDefault();
+                decY = setInterval(decreaseY, 500);
+                break;
 	
         }
     }
@@ -100,12 +157,32 @@ document.onkeyup = function(e) {
             sendrequest("b",0);
             button_pressed = 0;
             break;
-	case 76:
-	    sendrequest("k",0);
-	    button_pressed = 0;
-	    break;
-        default:
+	   case 76:
+    	    sendrequest("k",0);
+            button_pressed = 0;
+    	    break;
+        case 81:
+        case 69:
             sendrequest("j",0);
+            button_pressed = 0;
+            break;
+        case 68:
+            clearInterval(incX);
+            button_pressed = 0;
+            break;
+        case 65:
+            clearInterval(decX);
+            button_pressed = 0;
+            break;
+        case 87:
+            clearInterval(incY);
+            button_pressed = 0;
+        case 83:
+            clearInterval(decY);
+            button_pressed = 0;
+            break;
+        default:
+            pass()
     }
 };
 
@@ -114,7 +191,7 @@ document.onkeyup = function(e) {
 ///////////////////// Other UI elements (slider and graphs / sensor values) /////////////////////////
 
 window.onload = function(e){
-    
+
     $.each($('.slider'),function(n,slider){
 
         slider.oninput = function(){
