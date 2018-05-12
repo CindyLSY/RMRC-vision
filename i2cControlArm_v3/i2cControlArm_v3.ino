@@ -137,6 +137,8 @@ bool order = false; // this boolean will determine whether to call the executeOr
 int curralpha = 0;
 int currbeta = 0;
 
+int enable_servo = 1;
+
 
 //variables for base rotor position
 int curr_pos = 0;
@@ -146,6 +148,7 @@ bool base_dir = true; // left = true, right = false
 
 // variables for gyroscope functions
 bool straight = false;
+
 
 
 //----------SETUP--------------------------------------------------------------------------------
@@ -367,7 +370,9 @@ void executeOrder(){
         break;
 
       case 'e':  //(Mid)
-        servos[2].write(incoming_value);
+        incoming_type = '*';
+        servomov(2,incoming_value);
+        //servos[2].write(incoming_value);
         break;
 
       case 'f':  //(Swinger)
@@ -382,7 +387,8 @@ void executeOrder(){
         break;
         
       case 'h':  //(Rotor)
-        servos[4].write(incoming_value);
+        incoming_type = '*';
+        servomov(4,incoming_value);
         break;
 
       case 'i': // arm xy test
@@ -394,7 +400,12 @@ void executeOrder(){
       case 'j': // base rotor movement
         Serial.println("base rotor movement activated");
         incoming_type = '*';
+        if(incoming_value == 3) {
+          datum();
+        }
+        else {
         base(incoming_value);
+        }
         break;
 
       /*
@@ -463,15 +474,21 @@ void ReceiveMassage(int n){
       Serial.println("changedstraight on");
     }
     // if incoming command is for the claw or base
-    else if(incoming_type == 'g' || incoming_type == 'j') {
+    else if(incoming_type == 'g' || incoming_type == 'j' ||incoming_type == 'e'  || incoming_type == 'h') {
       incoming_value = value;
      
       //order will be executed in the main loop
       order = true;
     }
+    else if(incoming_type == 'l'){
+      Serial.print("here "); Serial.print(value);
+      enable_servo = value;
+      Serial.print(enable_servo);
+      incoming_type = '*';
+    }
     else {
-      if(incoming_type == 'd' ||incoming_type == 'e' ||
-      incoming_type == 'f' || incoming_type == 'h' ){
+      if(incoming_type == 'd' ||
+      incoming_type == 'f' ){
         Serial.println("GOT IT");
       }
       else {
@@ -541,7 +558,7 @@ void claw(boolean dir) {
 // function to count relative position as the magnetic sensor changes 
 void count_pos() {
   int val = digitalRead(magpin);
-  if(val != prev_state) {
+  if(vdal != prev_state) {
     if(base_dir == true) {curr_pos += 1;}
     else {curr_pos -= 1;}
 
@@ -551,7 +568,7 @@ void count_pos() {
 
 // function to bring the arm back to the datum position based on curr_pos
 void datum() {
-  curr_pos = int(curr_pos*0.9); // fudge factor for position
+  curr_pos = int(curr_pos*0.99); // fudge factor for position
   if(curr_pos <= 0) {
     base_dir = true; // currently have turned right. so will turn left towards datum
     digitalWrite(BaseA, HIGH); digitalWrite(BaseB, LOW);
@@ -597,6 +614,28 @@ void base(int command) {
     
 
 }
+///////////////////READ GYROSCOPE//////////////////////////////////////////////////////////////////////////////////////////////////////
+void servomov(int num, int target){
+  int currval = servos[num].read();
+  int inc;
+  
+  if(target - currval <= 0) {
+    inc = -1;
+  }
+  else {
+    inc = 1;
+  }
+  
+  for(int i = 0; i<abs(currval-target); i++) {
+    servos[num].write(currval + inc*i);
+
+    delay(10);
+    if(order == 1) {
+      break;
+    }
+  }
+}
+
 
 ///////////////////READ GYROSCOPE///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // call when calibrating the sensor 
@@ -692,6 +731,8 @@ void moveservoXY(int n, int m) {
   long b = millis();
   long c = millis();
 
+  Serial.print("enable servo?   "); Serial.println(enable_servo);
+
   //while no new input and while hasn t arrived at final state
   while(order == 0 && !(x_a >= count1 && x_b >= count2 && x_c >= count3)) {
     // Calculate the delay time for each servo. 
@@ -742,6 +783,7 @@ void moveservoXY(int n, int m) {
       }
     }
 
+    if(enable_servo){
     // movement of servo c (servo of the tip angle, the gripper)
     if(x_c <= count3) {
       if(millis() - c < t_c) {
@@ -760,6 +802,8 @@ void moveservoXY(int n, int m) {
         //Serial.println(t_b);
       }
     }
+
+  }
   }
   Serial.print("values read from servo: ");
   curralpha=servos[0].read();
