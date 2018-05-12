@@ -62,6 +62,11 @@ document.onkeydown = function(e) {
                 button_pressed = 1;
                 $('#down-btn').css({"background-color":"#007bff","color":"white"});
                 break;
+	    case 76://l
+		button_pressed = 1;
+		e.preventDefault();
+		sendrequest("k",1);
+		break;
             case 65://a
                 sendrequest("j",1);
                 break;
@@ -70,6 +75,7 @@ document.onkeydown = function(e) {
                 break;
             case 87://w
             case 83://s
+	
         }
     }
 
@@ -94,6 +100,10 @@ document.onkeyup = function(e) {
             sendrequest("b",0);
             button_pressed = 0;
             break;
+	case 76:
+	    sendrequest("k",0);
+	    button_pressed = 0;
+	    break;
         default:
             sendrequest("j",0);
     }
@@ -138,6 +148,22 @@ window.onload = function(e){
         }
     });
 
+    $('#disable_tip').text("Disabled Tip Servo");
+    $('#disable_tip').css({"background-color":"white","color":"#007bff"});
+
+    $("#disable_tip").click(function(){
+        claw_btn = $('#disable_tip');
+        if (claw_btn.css("background-color") == "rgb(0, 123, 255)"){
+            sendrequest("l",1);
+            claw_btn.css({"background-color":"white","color":"#007bff"});
+            claw_btn.text("Enabled Tip Servo")
+        }
+        else{
+            sendrequest("l",0);
+            claw_btn.css({"background-color":"#007bff","color":"white"});
+            claw_btn.text("Disabled Tip Servo");
+        }
+    });
 
 
     //Claw button starts deactivated. 

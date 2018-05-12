@@ -71,6 +71,7 @@ def process_audiorecordingrequest():
         
         #audio process object either does not exist  or is not running
         #Start audio recording process
+
         #if the file exists delete it first and overwrite it.
         if os.path.exists(file_path):
             os.remove(file_path)
@@ -134,13 +135,18 @@ def send_request():
 
     print(instruction,command)
 
+    if instruction != 'k':
+        bus.write_byte(address,ord(instruction))
+        time.sleep(0.01)
+        bus.write_byte(address,int(command))
+        time.sleep(0.01)
+    else:
+        time.sleep(0.1)
+        bus.write_byte(address,ord(instruction))
+        time.sleep(0.1)
+        bus.write_byte(address,int(command))
+        time.sleep(0.1)
 
-    bus.write_byte(address,ord(instruction))
-    time.sleep(0.01)
-
-
-    bus.write_byte(address,int(command))
-    time.sleep(0.01)
 
     response_content = 'sent instruction ' + instruction + command
     resp = Response(response_content)    
@@ -220,4 +226,4 @@ if __name__ == '__main__':
     bus = smbus.SMBus(1)    
     address = 0x04
     
-    app.run(host="192.168.0.102")
+    app.run(host="192.168.0.104")
