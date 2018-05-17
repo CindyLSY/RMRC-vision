@@ -84,6 +84,12 @@
 //magnetic encoder pin
 #define magpin 26
 
+// push mechanism
+#define pusha 22
+#define pushb 24
+#define pushpwm 12
+
+
 //SERVOS////////////////////////////////
 #define servo_Bot_num 2
 #define servo_Mid_num 3
@@ -181,6 +187,11 @@ void setup() {
   // magpin
   pinMode(magpin, INPUT);
 
+  // for Push mechanism
+  pinMode(pusha, OUTPUT);
+  pinMode(pushb, OUTPUT);
+  pinMode(pushpwm, OUTPUT);
+
   
   //Servos
   servos[0].attach(servo_Bot_num);
@@ -214,6 +225,14 @@ void setup() {
   // when ever this device is asked for a signal it runs this code
   Wire.onRequest(RequestMassage);
 }
+
+// for Push mechanism
+long push_timer = millis();
+
+int push_pos = 0;
+int push_saved = 0;
+int push_dir = 0;
+int push_max = 3300;
 
 //var declaration for straight
 long t0 = millis();
@@ -252,13 +271,43 @@ void loop() {
     servos[0].write(180);
     servos[1].write(178);
     servos[2].write(82);
-    servos[3].write(80);
+    servos[3].write(8);
     servos[4].write(80);
     delay(2000);
 
     while(true) {
        // count position of base rotor for arm
        count_pos();
+
+
+       if(push_dir != 0) {
+
+          Serial.println(push_pos);
+
+          // go up
+          if(push_dir == 1) {
+            if(push_pos > 400){
+              push_pos = push_saved - (millis() - push_timer);
+            }
+            else {
+              Serial.println("low power mode activated");
+              push(3);  
+            }
+          }
+
+          // go down
+          if(push_dir == 2) {
+            if(push_pos < push_max) {
+              push_pos = push_saved + (millis() - push_timer);
+            }
+            else{
+              Serial.println("max position reached");
+              push(0);
+            }
+          }
+
+          
+       }
       
       if(order == true) {
         order = false;
@@ -415,6 +464,13 @@ void executeOrder(){
         MoveStraight(incoming_value);
         break;
       */
+
+      case 'm':
+        Serial.println("Push");
+        incoming_type = '*';
+        push(incoming_value);
+        break;
+        
        
       default:
         Serial.print("Incorrect input"); Serial.println(incoming_type);
@@ -474,7 +530,8 @@ void ReceiveMassage(int n){
       Serial.println("changedstraight on");
     }
     // if incoming command is for the claw or base
-    else if(incoming_type == 'g' || incoming_type == 'j' ||incoming_type == 'e'  || incoming_type == 'h') {
+    else if(incoming_type == 'g' || incoming_type == 'j' ||incoming_type == 'e'  || incoming_type == 'h' 
+            || incoming_type == 'm') {
       incoming_value = value;
      
       //order will be executed in the main loop
@@ -519,7 +576,7 @@ void drive_controller(boolean motor, int motor_speed) {  //1 - right, o - left
   boolean dir = 1;
   if (motor_speed < 0) {
     dir = 0;
-    //motor_speed = -motor_speed;
+    motor_speed = -motor_speed;
     motor_speed = 0;
   }
   
@@ -558,7 +615,7 @@ void claw(boolean dir) {
 // function to count relative position as the magnetic sensor changes 
 void count_pos() {
   int val = digitalRead(magpin);
-  if(vdal != prev_state) {
+  if(val != prev_state) {
     if(base_dir == true) {curr_pos += 1;}
     else {curr_pos -= 1;}
 
@@ -614,6 +671,50 @@ void base(int command) {
     
 
 }
+
+///////////////////PUSH FUNCTIONS//////////////////////////////////////////////////////////////////////////////////////////////////////
+void push(int command) {
+
+  switch(command) {
+    case 1:
+      push_dir = 1;
+      digitalWrite(pusha, HIGH); digitalWrite(pushb, LOW);
+      analogWrite(pushpwm, 255);
+      Serial.println("get push UP");
+      push_saved = push_pos;
+      push_timer = millis();
+      break;
+
+    case 2:
+      push_dir = 2;
+      digitalWrite(pusha, LOW); digitalWrite(pushb, HIGH);
+      analogWrite(pushpwm, 255);
+      Serial.println("get push DOWN");
+      push_saved = push_pos;
+      push_timer = millis();
+      break;
+
+    case 3:
+      digitalWrite(pusha, HIGH); digitalWrite(pushb, LOW);
+      analogWrite(pushpwm, 50);
+      Serial.println("low power mode");
+      delay(1000);
+      Serial.println("moving up completed!");
+      push_saved = 0;
+      push_pos = 0;
+      push_dir = 0;
+      digitalWrite(pusha, LOW); digitalWrite(pushb, LOW);
+      break;
+
+    default:
+      digitalWrite(pusha, LOW); digitalWrite(pushb, LOW);
+      push_dir = 0;
+      Serial.println("turn motors off");
+  }
+    
+}
+
+
 ///////////////////READ GYROSCOPE//////////////////////////////////////////////////////////////////////////////////////////////////////
 void servomov(int num, int target){
   int currval = servos[num].read();
