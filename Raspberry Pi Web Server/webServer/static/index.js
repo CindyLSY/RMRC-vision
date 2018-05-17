@@ -2,11 +2,17 @@
 
 //////////////////// HTTP requests to the Flask API /////////////////////////////
 
+
+
+
 function sendrequest(instruction_val,command_val){
     $.post( "/send", { instruction: instruction_val, command: command_val } );
 }
 
 function sendarmrequest(){
+    //todo redraw graph with values xvval yval
+    myChart.data.datasets[2].data = [{x:x_val,y:y_val}];
+    myChart.update();
     $.post("/sendarmval",{X: x_val, Y: y_val} );
 } 
 
@@ -115,22 +121,22 @@ document.onkeydown = function(e) {
         case 68://a
                 button_pressed = 1;
                 e.preventDefault();
-                incX = setInterval(increaseX, 500);
+                incX = setInterval(increaseX, 200);
                 break;
         case 65://d
                 button_pressed = 1;
                 e.preventDefault();
-                decX = setInterval(decreaseX, 500);
+                decX = setInterval(decreaseX, 200);
                 break;
         case 87://w
                 button_pressed = 1;
                 e.preventDefault();
-                incY = setInterval(increaseY, 500);
+                incY = setInterval(increaseY, 200);
                 break;
         case 83://s
                 button_pressed = 1;
                 e.preventDefault();
-                decY = setInterval(decreaseY, 500);
+                decY = setInterval(decreaseY, 200);
                 break;
 	
         }
@@ -185,7 +191,6 @@ document.onkeyup = function(e) {
             pass()
     }
 };
-
 
 
 ///////////////////// Other UI elements (slider and graphs / sensor values) /////////////////////////
@@ -322,3 +327,75 @@ window.onload = function(e){
 
 }
 
+
+var ctx = $("#myChart");
+//var ctx = document.getElementById("myChart");
+var myChart = new Chart(ctx, {
+    type: 'scatter',
+    data: {
+        datasets: [{
+            label: 'Robot core',
+            data: [{
+                x: 0,
+                y: 0
+            }, {
+                x: 10,
+                y: 0
+            }],
+            type: 'line',
+            fill: '+1',
+            lineTension: 0,
+            //borderWidth: 10,
+            showLine: true,
+            backgroundColor: [
+                'rgba(255, 99, 132, 1)'
+            ]
+        },{
+            label: 'Bottom line',
+            data: [{
+                x: 0,
+                y: -6
+            }, {
+                x: 10,
+                y: -6
+            }],
+            type: 'line',
+            fill: false,
+            lineTension: 0,
+            //borderWidth: 10,
+            showLine: true,
+            backgroundColor: [
+                'rgba(255, 99, 132, 1)'
+            ]
+        },
+        {
+            label: 'Gripper position',
+            data: [{
+                x: 0,
+                y: 0
+            }],
+            pointRadius: 5,
+            backgroundColor: [
+                'rgba(54, 162, 235,1)'
+            ]
+        }]
+    },
+    options: {
+        scales: {
+            xAxes: [{
+                type: 'linear',
+                position: 'bottom',
+                ticks:{
+                    max: 25
+                }
+            }],
+            yAxes: [{
+                ticks:{
+                    min: -6,
+                    max: 25
+                }
+            }]
+        }
+    }
+
+});

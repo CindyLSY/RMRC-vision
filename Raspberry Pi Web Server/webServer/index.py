@@ -1,7 +1,7 @@
 from flask import Flask,render_template,request,Response,jsonify,send_file
 import json
 
-import smbus
+#import smbus
 import time
 import math
 
@@ -225,5 +225,5 @@ if __name__ == '__main__':
     #app = create_app()
     bus = smbus.SMBus(1)    
     address = 0x04
-    
+    #app.run(host='0.0.0.0')
     app.run(host="192.168.0.104")
