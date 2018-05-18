@@ -1,7 +1,7 @@
 from flask import Flask,render_template,request,Response,jsonify,send_file
 import json
 
-#import smbus
+import smbus
 import time
 import math
 
@@ -21,7 +21,7 @@ audio_process = None
 
 
 app = Flask(__name__)
-'''
+
 @app.route("/sendarmval",methods=["POST"])
 def send_amrrequest():
     print("arm_request")
@@ -46,7 +46,7 @@ def send_amrrequest():
     resp.headers['Content-Length'] = len(response_content)
 
     return resp
-'''
+
 @app.route("/audiorecording",methods=["POST"])
 def process_audiorecordingrequest():
     val = request.values.get("recording_on_off")
@@ -124,7 +124,7 @@ def return_audio_recording_file():
     file_path = current_directory_path+"/static/audio_recording.wav"
     return send_file(file_path)
 
-'''
+
 @app.route("/send",methods=["POST"])
 def send_request():
     instruction = request.values.get("instruction")
@@ -165,7 +165,7 @@ def collect_values():
     resp.headers['Content-Length'] = len(response_content)
 
     return resp
-'''
+
 @app.route("/")
 def index():
     return render_template("index2.html")
@@ -223,7 +223,7 @@ def calculate(x,y):
 
 if __name__ == '__main__':
     #app = create_app()
-    #bus = smbus.SMBus(1)    
+    bus = smbus.SMBus(1)    
     address = 0x04
-    app.run(host='0.0.0.0')
-    #app.run(host="192.168.0.101")
+    #app.run(host='0.0.0.0')
+    app.run(host="192.168.0.101")

@@ -17,7 +17,7 @@ function sendarmrequest(){
         {x:x_val,y:y_val}];
     }
     myChart.update();
-    //$.post("/sendarmval",{X: x_val, Y: y_val} );
+    $.post("/sendarmval",{X: x_val, Y: y_val} );
 } 
 
 function collectSensorValues(){
@@ -364,7 +364,6 @@ window.onload = function(e){
 
 
 var ctx = $("#myChart");
-//var ctx = document.getElementById("myChart");
 var myChart = new Chart(ctx, {
     type: 'scatter',
     data: {
