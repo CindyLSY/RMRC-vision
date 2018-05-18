@@ -15,9 +15,9 @@
     <!-- Custom styles for this template -->
     <script defer src="../static/fa-regular.min.js"></script>
     <script src="../static/fontawesome.min.js"></script>
-    <script src="../static/chart.js"></script>
 
     <script defer src="../static/index.js"></script>
+
     <style>
 
       .slidercontainer {
@@ -153,6 +153,20 @@
                   </div>
                 </div>
 
+		<div class="row top-buffer">
+		   <div class="col">
+                      <button type="button" class="btn btn-lg btn-outline-primary" id="push_up">
+                        Push Up
+                      </button>
+                  </div>
+
+		  <div class="col">
+                      <button type="button" class="btn btn-lg btn-outline-primary" id="push_down">
+                        Push Down
+                      </button>
+                  </div>
+
+		</div>
 		<div class = "row top-buffer">
                   <div class ="col">
                     Y-coordinate slider
@@ -254,7 +268,6 @@
             <div class = "row top-buffer">
               <div class = "col">Accelerometer</div>
               <div class = "col" id = "accel-value"></div>
-              <canvas id="myChart" width="400" height="400"></canvas>
             </div>
           </div>
       </div>
