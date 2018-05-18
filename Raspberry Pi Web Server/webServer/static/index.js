@@ -3,17 +3,21 @@
 //////////////////// HTTP requests to the Flask API /////////////////////////////
 
 
-
-
 function sendrequest(instruction_val,command_val){
     $.post( "/send", { instruction: instruction_val, command: command_val } );
 }
 
 function sendarmrequest(){
-    //todo redraw graph with values xvval yval
-    myChart.data.datasets[2].data = [{x:x_val,y:y_val}];
+    calculateXYtoAB(x_val,y_val);
+    if (alpha==0) {
+        myChart.data.datasets[2].data = [{x:0,y:0}, {x: 0, y: 0},{x: 0,y: 0}];
+    }else{
+    myChart.data.datasets[2].data = [{x:0,y:0},
+        {x: L1 * Math.cos(alpha), y: L1 * Math.sin(alpha)},
+        {x:x_val,y:y_val}];
+    }
     myChart.update();
-    $.post("/sendarmval",{X: x_val, Y: y_val} );
+    //$.post("/sendarmval",{X: x_val, Y: y_val} );
 } 
 
 function collectSensorValues(){
@@ -400,11 +404,21 @@ var myChart = new Chart(ctx, {
             ]
         },
         {
-            label: 'Gripper position',
+            label: 'Arm',
             data: [{
                 x: 0,
                 y: 0
+            },{
+                x: 0,
+                y: 0
+            }, {
+                x: 0,
+                y: 0
             }],
+            type: 'line',
+            showLine: true,
+            fill: false,
+            lineTension: 0,
             pointRadius: 5,
             backgroundColor: [
                 'rgba(54, 162, 235,1)'
@@ -430,3 +444,65 @@ var myChart = new Chart(ctx, {
     }
 
 });
+
+var alpha; 
+var beta;
+var gamma;
+var delta;
+
+var L1 =12.5;
+var L2 = 12;
+
+
+    
+function calculateXYtoAB(x,y){
+    var ok = 1;
+    
+    var L3= Math.sqrt(Math.pow(x,2) + Math.pow(y,2));
+    
+    var hyp=(Math.pow(L1,2) + Math.pow(L2,2) - Math.pow(L3,2))/(2*L1*L2);
+    
+    if(hyp <= 1 && hyp >= -1){
+        //arm is within reach
+        beta=Math.acos(hyp);
+    
+        // to avoid division by zero
+        if(Math.abs(x) < 0.001){
+            gamma = Math.PI/2;
+        }
+        else{
+            gamma = Math.atan(y/x);
+        }
+        
+        delta = Math.asin((L2/L3)*Math.sin(beta));
+    
+        alpha = Math.PI - gamma - delta;
+    
+        alpha = Math.PI - alpha;//(alpha/Math.PI)*180;
+        //beta = (beta/Math.PI)*180
+    }
+    else{
+        ok = 0;
+        alpha = 0; 
+        beta = 0;
+    }
+
+    /*
+    // PRINTING RESULTS
+    print("unrounded")
+    print("alpha: ",alpha,"   beta:",beta)
+    alpha = round(alpha);
+    beta = round(beta);
+
+    print("rounded")
+    print("alpha: ",alpha,"   beta:",beta)
+    */
+
+    if(alpha < 0 || alpha > Math.PI|| beta < 0 || beta > Math.PI){
+        // check if values are out of range
+        ok = 0;
+    }
+
+    return (ok,alpha,beta);
+    
+}
