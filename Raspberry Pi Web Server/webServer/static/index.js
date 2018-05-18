@@ -316,6 +316,37 @@ window.onload = function(e){
 
     //setInterval(function(){collectSensorValues();},3000);
 
+    
+    $('#push_up').css({"background-color":"white","color":"#007bff"});
+    $("#push_up").click(function(){
+       btn = $('#push_up');
+        if (btn.css("background-color") == "rgb(0, 123, 255)"){
+            sendrequest("m",0);
+            btn.css({"background-color":"white","color":"#007bff"});
+        }
+        else{
+            sendrequest("m",1);
+            btn.css({"background-color":"#007bff","color":"white"});
+        }
+    });
+
+
+    $('#push_down').css({"background-color":"white","color":"#007bff"});
+    $("#push_down").click(function(){
+       btn = $('#push_down');
+        if (btn.css("background-color") == "rgb(0, 123, 255)"){
+            sendrequest("m",0);
+            btn.css({"background-color":"white","color":"#007bff"});
+        }
+        else{
+            sendrequest("m",2);
+            btn.css({"background-color":"#007bff","color":"white"});
+        }
+    });
+
+
+    
+    
     $("#audio_recording_on_btn").click(function(){
         sendaudiorequest(1);
     });
