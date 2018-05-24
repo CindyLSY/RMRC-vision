@@ -279,14 +279,28 @@ void loop() {
        // count position of base rotor for arm
        count_pos();
 
+       push_pos = analogRead(2);
+       //Serial.println(push_pos);
+       if(push_dir != 0) {
+        
+       if(push_dir == 1 && push_pos > 980) {
+        push(3);
+       }
 
+       if(push_dir == 2 && push_pos < 300) {
+        push(0);
+       }
+
+       }
+
+       /*
        if(push_dir != 0) {
 
           Serial.println(push_pos);
 
           // go up
           if(push_dir == 1) {
-            if(push_pos > 400){
+            if(push_pos < 900){
               push_pos = push_saved - (millis() - push_timer);
             }
             else {
@@ -308,6 +322,7 @@ void loop() {
 
           
        }
+       */
       
       if(order == true) {
         order = false;
@@ -577,7 +592,7 @@ void drive_controller(boolean motor, int motor_speed) {  //1 - right, o - left
   if (motor_speed < 0) {
     dir = 0;
     motor_speed = -motor_speed;
-    motor_speed = 0;
+    //motor_speed = 0;
   }
   
   if (motor) {
@@ -681,8 +696,8 @@ void push(int command) {
       digitalWrite(pusha, HIGH); digitalWrite(pushb, LOW);
       analogWrite(pushpwm, 255);
       Serial.println("get push UP");
-      push_saved = push_pos;
-      push_timer = millis();
+      //push_saved = push_pos;
+      //push_timer = millis();
       break;
 
     case 2:
@@ -690,18 +705,18 @@ void push(int command) {
       digitalWrite(pusha, LOW); digitalWrite(pushb, HIGH);
       analogWrite(pushpwm, 255);
       Serial.println("get push DOWN");
-      push_saved = push_pos;
-      push_timer = millis();
+      //push_saved = push_pos;
+      //push_timer = millis();
       break;
 
     case 3:
       digitalWrite(pusha, HIGH); digitalWrite(pushb, LOW);
       analogWrite(pushpwm, 50);
       Serial.println("low power mode");
-      delay(1000);
+      delay(500);
       Serial.println("moving up completed!");
-      push_saved = 0;
-      push_pos = 0;
+      //push_saved = 0;
+      //push_pos = 0;
       push_dir = 0;
       digitalWrite(pusha, LOW); digitalWrite(pushb, LOW);
       break;
