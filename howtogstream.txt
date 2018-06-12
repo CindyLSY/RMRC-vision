@@ -1,0 +1,7 @@
+download gstreamer on operator station (use version with the right bits and not developer)
+get ip address of operator station using ipconfig
+change ip in sh file of pi
+sudo service motion stop on pi
+./startVideo.sh on pi (potentially multiple times)
+run following line in folder gestreamer/1.0/64bit/bin of operator (for Oliver: D: followed by D:\gstreamer\1.0\x86_64\bin
+./gst-launch-1.0.exe -e -v udpsrc port=5001 ! "application/x-rtp, encoding-name=JPEG, payload=26" ! rtpjpegdepay ! jpegdec ! autovideosink

@@ -11,6 +11,7 @@
 
     <!-- Bootstrap core CSS -->
     <link href="../static/bootstrap.min.css" rel="stylesheet">
+    <link href="../static/snackbar.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
     <script defer src="../static/fa-regular.min.js"></script>
@@ -62,14 +63,12 @@
 
     .top-buffer { margin-top:20px; }
     
-    
     </style>
 
 
   </head>
 
   <body>
-
     <div class="d-flex flex-column flex-md-row align-items-right p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
       <h5 class="my-0 mr-md-auto font-weight-normal">CuR RMRC Dashboard</h5>
       <nav class="my-2 my-md-0 mr-md-3">
@@ -81,6 +80,7 @@
     </div>
 
     <div class="container">
+    <div id="snackbar">You can't move the arm any further.</div> 
       <div class="card-deck mb-3 text-center">
         <div class="card mb-4 box-shadow">
           <div class="card-header">

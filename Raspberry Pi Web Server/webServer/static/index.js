@@ -11,15 +11,20 @@ function sendarmrequest(){
     calculateXYtoAB(x_val,y_val);
     if (alpha==0) {
         myChart.data.datasets[2].data = [{x:0,y:0}, {x: 0, y: 0},{x: 0,y: 0}];
+        showToast();
     }else{
-    myChart.data.datasets[2].data = [{x:0,y:0},
-        {x: L1 * Math.cos(alpha), y: L1 * Math.sin(alpha)},
-        {x:x_val,y:y_val}];
+        myChart.data.datasets[2].data = [{x:0,y:0},
+            {x: L1 * Math.cos(alpha), y: L1 * Math.sin(alpha)},
+            {x:x_val,y:y_val}];
+        myChart.update();
+        $.post("/sendarmval",{X: x_val, Y: y_val} );
     }
-    myChart.update();
-    $.post("/sendarmval",{X: x_val, Y: y_val} );
 } 
-
+function showToast(){
+    var x = document.getElementById("snackbar");
+    x.className = "show";
+    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+}
 function collectSensorValues(){
     $.get("/collect", function(data){
         $("#accel-value").text(data);
