@@ -466,9 +466,21 @@ void executeOrder(){
         incoming_type = '*';
         if(incoming_value == 3) {
           datum();
+        }else if(incoming_value == 4){
+          //going straight view mode
+          alpha = 60;
+          beta = 60;
+           //tip to be impl
+          movearm();
+        }else if(incoming_value == 5){
+          //overlook view
+          alpha = 120;
+          beta = 30;
+          //tip to be impl
+          movearm();
         }
         else {
-        base(incoming_value);
+          base(incoming_value);
         }
         break;
 

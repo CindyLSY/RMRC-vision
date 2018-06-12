@@ -130,22 +130,22 @@ document.onkeydown = function(e) {
         case 68://a
                 button_pressed = 1;
                 e.preventDefault();
-                incX = setInterval(increaseX, 200);
+                incX = setInterval(increaseX, 250);
                 break;
         case 65://d
                 button_pressed = 1;
                 e.preventDefault();
-                decX = setInterval(decreaseX, 200);
+                decX = setInterval(decreaseX, 250);
                 break;
         case 87://w
                 button_pressed = 1;
                 e.preventDefault();
-                incY = setInterval(increaseY, 200);
+                incY = setInterval(increaseY, 250);
                 break;
         case 83://s
                 button_pressed = 1;
                 e.preventDefault();
-                decY = setInterval(decreaseY, 200);
+                decY = setInterval(decreaseY, 250);
                 break;
 	
         }
@@ -316,7 +316,12 @@ window.onload = function(e){
     $("#datum").click(function(){
       sendrequest("j",3);
      });
-
+    $("#straightView").click(function(){
+       sendrequest("j",4);
+     });
+    $("#robotView").click(function(){
+       sendrequest("j",5);
+     });
     $("#x_down").click(function(){
        x_val -= x_inc; 
       $("#x_value").text("X cooridnate is: " + x_val);
