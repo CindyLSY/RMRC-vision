@@ -71,6 +71,7 @@ function decreaseY(){
 
 var button_pressed = 0;
 var speed = 127;
+var driving_mode  = 1;
 
 var y_val = 0;
 var x_val = 0;
@@ -86,8 +87,13 @@ document.onkeydown = function(e) {
         switch (e.keyCode) {
             case 37:                    // left key
                 e.preventDefault();
-                sendrequest("b", speed);         //left motor speed = -127
-                sendrequest("a", -speed);          //right motor speed = 127
+                if (driving_mode) { //default mode
+                    sendrequest("a", -speed);          
+                    sendrequest("b", speed);             
+                }else{              //going straight mode
+                    sendrequest("b", speed);       
+                    sendrequest("a", 0);             
+                }
                 button_pressed = 1;
                 $('#left-btn').css({"background-color":"#007bff","color":"white"});
                 break;
@@ -100,8 +106,13 @@ document.onkeydown = function(e) {
                 break;
             case 39:
                 e.preventDefault();    // right key
-                sendrequest("a", speed);           //right motor speed = -127
-                sendrequest("b", -speed);            //left motor speed = 127
+                if (driving_mode) {
+                    sendrequest("a", speed);           //right motor speed = -127
+                    sendrequest("b", -speed);            //left motor speed = 127     
+                }else{
+                    sendrequest("a", speed);           //right motor speed = -127
+                    sendrequest("b", 0);            //left motor speed = 127    
+                }
                 button_pressed = 1;
                 $('#right-btn').css({"background-color":"#007bff","color":"white"});
                 break;
@@ -239,7 +250,7 @@ window.onload = function(e){
         }
     });
 
-    $('#disable_tip').text("Disabled Tip Servo");
+    $('#disable_tip').text("Tip follows");
     $('#disable_tip').css({"background-color":"white","color":"#007bff"});
 
     $("#disable_tip").click(function(){
@@ -247,19 +258,24 @@ window.onload = function(e){
         if (claw_btn.css("background-color") == "rgb(0, 123, 255)"){
             sendrequest("l",1);
             claw_btn.css({"background-color":"white","color":"#007bff"});
-            claw_btn.text("Enabled Tip Servo")
+            claw_btn.text("Tip follows")
         }
         else{
             sendrequest("l",0);
             claw_btn.css({"background-color":"#007bff","color":"white"});
-            claw_btn.text("Disabled Tip Servo");
+            claw_btn.text("Tip stays");
         }
     });
 
-
+    $('#drivingMode1').click(function(){
+        driving_mode = 1;
+    });
+    $('#drivingMode2').click(function(){
+        driving_mode = 0;
+    });
     //Claw button starts deactivated. 
     //Make sure to set its color appropriately
-    $('#claw-btn').text("Claw Deactivated!");
+    $('#claw-btn').text("Close claw");
     $('#claw-btn').css({"background-color":"white","color":"#007bff"});
 
     $("#claw-btn").click(function(){
@@ -267,12 +283,12 @@ window.onload = function(e){
         if (claw_btn.css("background-color") == "rgb(0, 123, 255)"){
             sendrequest("g",1);
             claw_btn.css({"background-color":"white","color":"#007bff"});
-            claw_btn.text("Claw Deactivated!")
+            claw_btn.text("Close claw")
         }
         else{
             sendrequest("g",0);
             claw_btn.css({"background-color":"#007bff","color":"white"});
-            claw_btn.text("Claw Activated!");
+            claw_btn.text("Open claw");
         }
     });
 
@@ -343,6 +359,8 @@ window.onload = function(e){
             btn.css({"background-color":"#007bff","color":"white"});
         }
     });
+
+
 
 
     $('#push_down').css({"background-color":"white","color":"#007bff"});

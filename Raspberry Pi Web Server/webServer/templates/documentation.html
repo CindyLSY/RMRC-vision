@@ -1,0 +1,144 @@
+
+<!doctype html> <html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../static/favicon.ico">
+
+    <title>Robot UI</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="../static/bootstrap.min.css" rel="stylesheet">
+    <link href="../static/snackbar.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <script defer src="../static/fa-regular.min.js"></script>
+    <script src="../static/fontawesome.min.js"></script>
+    <script src="../static/chart.js"></script> 
+
+    <script defer src="../static/index.js"></script>
+
+    <style>
+
+      .slidercontainer {
+        width : 100%;
+      }
+
+    /* The slider itself */
+    .slider {
+        -webkit-appearance: none;  /* Override default CSS styles */
+        appearance: none;
+        width: 100%; /* Full-width */
+        height: 25px; /* Specified height */
+        background: #d3d3d3; /* Grey background */
+        outline: none; /* Remove outline */
+        opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+        -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+        transition: opacity .2s;
+    }
+
+    /* Mouse-over effects */
+    .slider:hover {
+        opacity: 1; /* Fully shown on mouse-over */
+    }
+
+    /* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */ 
+    .slider::-webkit-slider-thumb {
+        -webkit-appearance: none; /* Override default look */
+        appearance: none;
+        width: 25px; /* Set a specific slider handle width */
+        height: 25px; /* Slider handle height */
+        background: #4CAF50; /* Green background */
+        cursor: pointer; /* Cursor on hover */
+    }
+
+    .slider::-moz-range-thumb {
+        width: 25px; /* Set a specific slider handle width */
+        height: 25px; /* Slider handle height */
+        background: #4CAF50; /* Green background */
+        cursor: pointer; /* Cursor on hover */
+    }
+
+    .top-buffer { margin-top:20px; }
+    
+    </style>
+
+
+  </head>
+
+  <body>
+    <div class="d-flex flex-column flex-md-row align-items-right p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
+      <h5 class="my-0 mr-md-auto font-weight-normal">CuR RMRC Dashboard</h5>
+      <nav class="my-2 my-md-0 mr-md-3">
+        <a class="p-2 text-dark" href="/">Commands</a>
+        <!--<a class="p-2 text-dark" href="#">Remote Control</a>
+        <a class="p-2 text-dark" href="#">Sensor Dashboards</a>-->
+      </nav>
+      <a class="btn btn-outline-primary" href="#">Documentation</a>
+    </div>
+
+    <div class="container">
+      <h1>How to solve the different tasks</h1>
+      <p class="lead">Tasks which can't be solved using the dashboard and the camera, but need separate systems which couldn't be implemented in the dashboard.</p>
+      <h2>Get videostream</h2>
+        <ul>
+          <li>Download GStreamer on Operator Station (use right bit version and not developer)</li>
+          <li>Get IP address of operator station using ipconfig</li>
+          <li>Change IP in the sh file on pi</li>
+          <li>Execute on PI: sudo service motion stop</li>
+          <li>Followed by: ./startVideo.sh</li>
+          <li>Go on operator station to folder D:\gstreamer\1.0\x86_64\bin (D: then folder)</li>
+          <li>Execute /gst-launch-1.0.exe -e -v udpsrc port=5001 ! "application/x-rtp, encoding-name=JPEG, payload=26" ! rtpjpegdepay ! jpegdec ! autovideosink </li>
+        </ul>
+      <h2>Analyse Audio</h2>
+        <ul>
+          <li>Start Virtual Box, start prepared Linux</li>
+          <li>Record Audio using Dashboard</li>
+          <li>cd Desktop/Work/RMRC/dejavu-master/ </li>
+          <li>for both: if problems connecting: on VM, Devices, Network, Connect Network Adapter twice </li>
+          <h4>If wifi: very good results</h4>
+            <ul>
+              <li>nano google_speech.py and change IP address of PI</li>
+              <li>python google_speech.py</li>
+            </ul>
+          <h4>Else</h4>
+            <ul>
+              <li>Initialise: save sample file from website</li>
+              <li>Truncate it and put it using USB in virtual box (Devices/USB)</li>
+              <li>execute source venv2/bin/activate</li>
+              <li>nano example.py and change IP address of PI</li>
+              <li>python example.py values over 80 are trustable</li>
+            </ul>
+        </ul>
+      <h2>Image Analysis/Motion Detection</h2>
+        <ul>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+        </ul>
+      <h2>Thermal camera stream</h2>
+        <ul>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+        </ul>
+    </div>
+  </div>
+
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="../static/bootstrap.min.js"></script>
+    <script src="../static/jquery.min.js"></script>
+  </body>
+</html>

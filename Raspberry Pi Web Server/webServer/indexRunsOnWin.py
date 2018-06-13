@@ -167,8 +167,11 @@ def collect_values():
 '''
 @app.route("/")
 def index():
-    return render_template("index2.html")
+    return render_template("index.html")
     
+@app.route("/documentation")
+def indexDoc():
+    return render_template("documentation.html")
 
 
 def calculate(x,y):
