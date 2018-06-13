@@ -159,9 +159,8 @@ def send_request():
 def collect_values():
     #msg= ""
     #for i in range (0,8):
-    msg = bus.read_word_data(address, 0)
+    msg = str(bus.read_byte(address))
     print(msg)
-    print(msg + "!")
     placeholder = "No value collected"
     if msg != "":
         placeholder = ""

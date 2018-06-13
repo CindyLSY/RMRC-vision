@@ -149,7 +149,7 @@ int enable_servo = 1;
 
 
 //variables for base rotor position
-int curr_pos = 0;
+float curr_pos = 0;
 int prev_state = 0;
 bool base_dir = true; // left = true, right = false
 
@@ -229,8 +229,16 @@ void setup() {
   Wire.onRequest(Send);
 }
 
+int angle(float pos){
+  return (pos/10)*0.9278;
+}
+
 void Send(){
-  Wire.write(2); //ビットを2つ右にずらした数値を送る（4で割った数値）
+  int val = angle(curr_pos);
+  Serial.println(val);
+  int sending_val = int((val+90)/2);
+  Serial.print(sending_val);
+  Wire.write(sending_val); //ビットを2つ右にずらした数値を送る（4で割った数値）
 }
 
 // for Push mechanism
@@ -285,6 +293,14 @@ void loop() {
     while(true) {
        // count position of base rotor for arm
        count_pos();
+       if(angle(curr_pos) > 180){
+        Serial.println("base is out of moving range");
+    base(0);
+  }
+  if(angle(curr_pos) < -90){
+    Serial.println("base is out of moving range");
+    base(0);
+  }
 
        push_pos = analogRead(2);
        //Serial.println(push_pos);
@@ -600,14 +616,6 @@ void ReceiveMassage(int n){
   }
 }
 
-<<<<<<< HEAD
-=======
-void RequestMassage(){
-  //Wire.write(72);//ord of H
-  message = curr_pos;
-  Wire.write(curr_pos);
-}
->>>>>>> 466fea6e622de1e4e2d2fc20f346481e09911ce3
 
 ///////////////////MOTORS FOR WHEELS////////////////////////////////////////////////////////////////////////////////////////////////////////
 void drive_controller(boolean motor, int motor_speed) {  //1 - right, o - left
@@ -671,6 +679,7 @@ void datum() {
     while(curr_pos <= 0) {
       count_pos();
     }
+  
   }
   else {
     base_dir = false; // currently have turned left. so will turn right towards datum
@@ -679,6 +688,7 @@ void datum() {
     while(curr_pos > 0) {
       count_pos();
     }
+    
   }
   digitalWrite(BaseA, LOW); digitalWrite(BaseB, LOW);
   Serial.println(curr_pos);
@@ -691,6 +701,7 @@ void base(int command) {
   switch(command) {
     case 1:
       base_dir = true;
+      Serial.println("adsf");
       digitalWrite(BaseA, HIGH); digitalWrite(BaseB, LOW);
       analogWrite(BasePWM, 200);
       break;

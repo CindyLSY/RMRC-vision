@@ -27,7 +27,12 @@ function showToast(){
 }
 function collectSensorValues(){
     $.get("/collect", function(data){
-        $("#base_rotor_value").text(data);
+	var treated = (int(data)*2)-90;
+        console.log(data);
+	console.log(int(data));
+	console.log(treated);
+	console.log(data*2);
+	$("#base_rotor_value").text(treated);
     });
 }
 
