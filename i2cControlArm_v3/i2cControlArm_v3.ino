@@ -211,8 +211,8 @@ void setup() {
     delay(500);
   }
   // calibration
-  mpu.calibrateGyro();
-  mpu.setThreshold(3);
+  //mpu.calibrateGyro();
+  //mpu.setThreshold(3);
 
 
   //delay(2000); //time for servos
@@ -222,11 +222,15 @@ void setup() {
   //Begin i2c communication
   Wire.begin(SLAVE_ADDRESS);
 
-  // whenever the device recieves a signal this program is called
+//Raspberry Piから何かを受け取るたび、processMessage関数を呼び出す 
   Wire.onReceive(ReceiveMassage); 
-  
-  // when ever this device is asked for a signal it runs this code
-  Wire.onRequest(RequestMassage);
+
+//Raspberry Piから要求された場合に、sendAnalogReading関数を呼び出す 
+  Wire.onRequest(Send);
+}
+
+void Send(){
+  Wire.write(2); //ビットを2つ右にずらした数値を送る（4で割った数値）
 }
 
 // for Push mechanism
@@ -273,7 +277,7 @@ void loop() {
     
     servos[0].write(180);
     servos[1].write(178);
-    servos[2].write(82);
+    servos[2].write(60);
     servos[3].write(8);
     servos[4].write(80);
     delay(2000);
@@ -596,10 +600,6 @@ void ReceiveMassage(int n){
   }
 }
 
-void RequestMassage(){
-  Wire.write(72);//ord of H
-  message = 'T';
-}
 
 ///////////////////MOTORS FOR WHEELS////////////////////////////////////////////////////////////////////////////////////////////////////////
 void drive_controller(boolean motor, int motor_speed) {  //1 - right, o - left
@@ -772,8 +772,8 @@ void servomov(int num, int target){
 // call when calibrating the sensor 
 void gyro_calib() {
   // calibration
-  mpu.calibrateGyro();
-  mpu.setThreshold(3);
+  //mpu.calibrateGyro();
+  //mpu.setThreshold(3);
   integral = 0;
 }
 
