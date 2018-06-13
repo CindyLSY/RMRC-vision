@@ -273,7 +273,7 @@ void loop() {
     
     servos[0].write(180);
     servos[1].write(178);
-    servos[2].write(82);
+    servos[2].write(60);
     servos[3].write(8);
     servos[4].write(80);
     delay(2000);
@@ -597,8 +597,9 @@ void ReceiveMassage(int n){
 }
 
 void RequestMassage(){
-  Wire.write(72);//ord of H
-  message = 'T';
+  //Wire.write(72);//ord of H
+  message = curr_pos;
+  Wire.write(curr_pos);
 }
 
 ///////////////////MOTORS FOR WHEELS////////////////////////////////////////////////////////////////////////////////////////////////////////
