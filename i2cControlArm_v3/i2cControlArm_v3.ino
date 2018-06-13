@@ -137,6 +137,8 @@ int alpha = 0; //base servo angle
 int beta = 0; //mid servo angle
 bool is_alpha_in = true; //notify the code when two values have come through
 
+int gamma = 0; // tip angle value. Only activated when specifically called to do going straight mode/normal view angle mode
+
 bool order = false; // this boolean will determine whether to call the executeOrder function
                     // this is here because within the interrupt funciton, delays are useless
 
@@ -154,6 +156,7 @@ bool base_dir = true; // left = true, right = false
 
 // variables for gyroscope functions
 bool straight = false;
+
 
 
 
@@ -470,13 +473,13 @@ void executeOrder(){
           //going straight view mode
           alpha = 60;
           beta = 60;
-           //tip to be impl
+          gamma = 160;
           movearm();
         }else if(incoming_value == 5){
           //overlook view
-          alpha = 120;
-          beta = 30;
-          //tip to be impl
+          alpha = 0;
+          beta = 90;
+          gamma = 180;
           movearm();
         }
         else {
@@ -827,7 +830,15 @@ void moveservoXY(int n, int m) {
 
   // gpos = angle fed into the third servo (the tip angle of the gripper)
   // this formula becomes a bit dodgy when it goes to extreme angles. This is because at extremes, theoretical angles ≠ real angles
-  int gpos = 82+n-m;
+  Serial.print("Gamma equals:   "); Serial.println(gamma);
+  int gpos;
+  if(gamma != 0){
+    gpos = gamma;
+    gamma = 0;
+  }
+  else {
+    gpos = 60+n-m;
+  }
 
   // calcualte difference in angle (degrees) of each servo
   int currval1=servos[0].read();
