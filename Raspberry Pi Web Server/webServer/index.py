@@ -34,10 +34,10 @@ def send_amrrequest():
     bus.write_byte(address,105) #105 is ascii code for "i"
     time.sleep(0.01)
 
-    bus.write_byte(address,result[1])
+    bus.write_byte(address,int(result[1]))
     time.sleep(0.01)
 
-    bus.write_byte(address,result[2])
+    bus.write_byte(address,int(result[2]))
     time.sleep(0.01)
 
     response_content = 'sent instruction ' + X + Y
@@ -157,9 +157,15 @@ def send_request():
     
 @app.route("/collect",methods = ["GET"])
 def collect_values():
-    msg = chr(bus.read_byte(address))
-
-    response_content = "Collected Value: " + msg
+    #msg= ""
+    #for i in range (0,8):
+    msg = bus.read_word_data(address, 0)
+    print(msg)
+    print(msg + "!")
+    placeholder = "No value collected"
+    if msg != "":
+        placeholder = ""
+    response_content = placeholder + msg
     resp = Response(response_content)    
     resp.headers['Content-type'] = 'text/plain'
     resp.headers['Content-Length'] = len(response_content)
@@ -229,4 +235,4 @@ if __name__ == '__main__':
     bus = smbus.SMBus(1)    
     address = 0x04
     #app.run(host='0.0.0.0')
-    app.run(host="192.168.0.101")
+    app.run(host="192.168.0.100")

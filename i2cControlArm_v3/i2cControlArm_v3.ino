@@ -600,6 +600,14 @@ void ReceiveMassage(int n){
   }
 }
 
+<<<<<<< HEAD
+=======
+void RequestMassage(){
+  //Wire.write(72);//ord of H
+  message = curr_pos;
+  Wire.write(curr_pos);
+}
+>>>>>>> 466fea6e622de1e4e2d2fc20f346481e09911ce3
 
 ///////////////////MOTORS FOR WHEELS////////////////////////////////////////////////////////////////////////////////////////////////////////
 void drive_controller(boolean motor, int motor_speed) {  //1 - right, o - left

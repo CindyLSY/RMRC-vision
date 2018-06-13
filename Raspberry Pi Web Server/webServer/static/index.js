@@ -27,7 +27,7 @@ function showToast(){
 }
 function collectSensorValues(){
     $.get("/collect", function(data){
-        $("#accel-value").text(data);
+        $("#base_rotor_value").text(data);
     });
 }
 
@@ -191,6 +191,7 @@ document.onkeyup = function(e) {
         case 69:
             sendrequest("j",0);
             button_pressed = 0;
+            collectSensorValues();
             break;
         case 68:
             clearInterval(incX);
@@ -275,7 +276,7 @@ window.onload = function(e){
     });
     //Claw button starts deactivated. 
     //Make sure to set its color appropriately
-    $('#claw-btn').text("Close claw");
+    $('#claw-btn').text("Open claw");
     $('#claw-btn').css({"background-color":"white","color":"#007bff"});
 
     $("#claw-btn").click(function(){
@@ -283,12 +284,12 @@ window.onload = function(e){
         if (claw_btn.css("background-color") == "rgb(0, 123, 255)"){
             sendrequest("g",1);
             claw_btn.css({"background-color":"white","color":"#007bff"});
-            claw_btn.text("Close claw")
+            claw_btn.text("Open claw")
         }
         else{
             sendrequest("g",0);
             claw_btn.css({"background-color":"#007bff","color":"white"});
-            claw_btn.text("Open claw");
+            claw_btn.text("Close claw");
         }
     });
 
