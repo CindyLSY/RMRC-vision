@@ -159,7 +159,6 @@ bool straight = false;
 
 
 
-
 //----------SETUP--------------------------------------------------------------------------------
 void setup() {
   Serial.begin(115200);
@@ -293,14 +292,14 @@ void loop() {
     while(true) {
        // count position of base rotor for arm
        count_pos();
-       if(angle(curr_pos) > 180){
+       if(angle(curr_pos) > 180&&base_dir == true){
         Serial.println("base is out of moving range");
-    base(0);
-  }
-  if(angle(curr_pos) < -90){
-    Serial.println("base is out of moving range");
-    base(0);
-  }
+        base(0);
+       }
+      if(angle(curr_pos) < -90&& base_dir == false){
+        Serial.println("base is out of moving range");
+        base(0);
+      }
 
        push_pos = analogRead(2);
        //Serial.println(push_pos);
