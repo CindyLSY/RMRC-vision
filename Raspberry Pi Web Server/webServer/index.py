@@ -1,4 +1,4 @@
-from flask import Flask,render_template,request,Response,jsonify,send_file
+from flask import Flask,render_template,request,Response,jsonify,send_file,redirect, url_for
 import json
 
 import smbus
@@ -8,6 +8,9 @@ import math
 import subprocess
 import os
 
+import RPi.GPIO as GPIO           # import RPi.GPIO module  
+GPIO.setmode(GPIO.BCM)            # choose BCM or BOARD  
+GPIO.setup(11, GPIO.OUT) # set a port/pin as an output  
 #angles of the servo
 alpha = 0
 beta = 0
@@ -176,6 +179,15 @@ def index():
     return render_template("index.html")
     
 
+@app.route("/reset")
+def reset():
+    print("reset")
+    GPIO.output(11,1)
+    time.sleep(2)
+    GPIO.output(11,0)
+    time.sleep(0.5)
+    return redirect(url_for('index'))
+
 @app.route("/documentation")
 def indexDoc():
     return render_template("documentation.html")
@@ -234,4 +246,4 @@ if __name__ == '__main__':
     bus = smbus.SMBus(1)    
     address = 0x04
     #app.run(host='0.0.0.0')
-    app.run(host="192.168.0.100")
+    app.run(host="192.168.1.212")

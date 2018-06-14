@@ -9,9 +9,9 @@ function sendrequest(instruction_val,command_val){
 
 function sendarmrequest(){
     calculateXYtoAB(x_val,y_val);
-    if (alpha==0) {
+    if (alpha==-1) {
         myChart.data.datasets[2].data = [{x:0,y:0}, {x: 0, y: 0},{x: 0,y: 0}];
-        showToast();
+        showToast("You can't move the arm any further.");
     }else{
         myChart.data.datasets[2].data = [{x:0,y:0},
             {x: L1 * Math.cos(alpha), y: L1 * Math.sin(alpha)},
@@ -20,19 +20,22 @@ function sendarmrequest(){
         $.post("/sendarmval",{X: x_val, Y: y_val} );
     }
 } 
-function showToast(){
+function showToast(text){
     var x = document.getElementById("snackbar");
+    x.innerText = text;
     x.className = "show";
     setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
 }
 function collectSensorValues(){
     $.get("/collect", function(data){
-	var treated = (parseInt(data)*2)-90;
-    console.log(data);
-	//console.log(int(data));
-	console.log(treated);
-	console.log(data*2);
-	$("#base_rotor_value").text(treated);
+        if(data == 255){//code for timeout
+            showToast("Datum timed out");
+            return 0;
+        }else{
+	       var treated = (parseInt(data)*2)-90;
+	       $("#base_rotor_value").text(treated);
+           return treated;
+       }
     });
 }
 
@@ -298,7 +301,6 @@ window.onload = function(e){
         }
     });
 
-
     /*
     $('#left_rot').text("Turn Left");
     $('#left_rot').css({"background-color":"white","color":"#007bff"});
@@ -338,15 +340,31 @@ window.onload = function(e){
     $("#datum").click(function(){
       sendrequest("j",3);
      });
+    $("#resetDatum").click(function(){
+      sendrequest("j",6);
+     });
     $("#straightView").click(function(){
        sendrequest("j",4);
      });
     $("#robotView").click(function(){
        sendrequest("j",5);
      });
+    $("#lookBack").click(function(){
+        y_val = 22;
+        x_val = 0;
+        sendarmrequest();
+        sendrequest("j",1);
+        var d = new Date();
+        var n = d.getTime();
+        while(((collectSensorValues)<170) && (d.getTime()-n < 5000)){
+            pass()
+        }
+        sendrequest("j",0);
+
+     });
     $("#x_down").click(function(){
        x_val -= x_inc; 
-      $("#x_value").text("X cooridnate is: " + x_val);
+      $("#x_value").text("X coordinate is: " + x_val);
       //sendarmrequest();
     });
 
@@ -495,8 +513,8 @@ function calculateXYtoAB(x,y){
     
     var hyp=(Math.pow(L1,2) + Math.pow(L2,2) - Math.pow(L3,2))/(2*L1*L2);
     
+    //arm is within reach
     if(hyp <= 1 && hyp >= -1){
-        //arm is within reach
         beta=Math.acos(hyp);
     
         // to avoid division by zero
@@ -516,8 +534,8 @@ function calculateXYtoAB(x,y){
     }
     else{
         ok = 0;
-        alpha = 0; 
-        beta = 0;
+        alpha = -1; 
+        beta = -1;
     }
 
     /*

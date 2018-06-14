@@ -106,6 +106,7 @@ int pos_goto_temp;
 char incoming_type = '*';
 int incoming_value;
 boolean new_command;
+boolean datumExpired=false;
 
 
 //TIME VARIABLES
@@ -233,11 +234,17 @@ int angle(float pos){
 }
 
 void Send(){
+  if(datumExpired){//Code for datum expired
+    Wire.write(255);
+    datumExpired = false;
+  }else{
   int val = angle(curr_pos);
   Serial.println(val);
   int sending_val = int((val+90)/2);
+  }
   Serial.print(sending_val);
   Wire.write(sending_val); //ビットを2つ右にずらした数値を送る（4で割った数値）
+  
 }
 
 // for Push mechanism
@@ -500,6 +507,9 @@ void executeOrder(){
           beta = 90;
           gamma = 180;
           movearm();
+        }else if(incoming_value == 6){
+          //reset datum
+          curr_pos = 0;
         }
         else {
           base(incoming_value);
@@ -668,14 +678,16 @@ void count_pos() {
   }
 }
 
+unsigned long timeStart;
 // function to bring the arm back to the datum position based on curr_pos
 void datum() {
   curr_pos = int(curr_pos*0.99); // fudge factor for position
+  timeStart = millis();
   if(curr_pos <= 0) {
     base_dir = true; // currently have turned right. so will turn left towards datum
     digitalWrite(BaseA, HIGH); digitalWrite(BaseB, LOW);
     analogWrite(BasePWM, 200);
-    while(curr_pos <= 0) {
+    while(curr_pos <= 0 && (millis() - timeStart)<5000) {
       count_pos();
     }
   
@@ -684,10 +696,13 @@ void datum() {
     base_dir = false; // currently have turned left. so will turn right towards datum
     digitalWrite(BaseA, LOW); digitalWrite(BaseB, HIGH);
     analogWrite(BasePWM, 200);
-    while(curr_pos > 0) {
+    while(curr_pos > 0 && (millis() - timeStart)<5000) {
       count_pos();
     }
     
+  }
+  if((millis()-timeStart)>5000){
+    datumExpired = true;
   }
   digitalWrite(BaseA, LOW); digitalWrite(BaseB, LOW);
   Serial.println(curr_pos);

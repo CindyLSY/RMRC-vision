@@ -88,9 +88,9 @@
           <li>Get IP address of operator station using ipconfig</li>
           <li>Change IP in the sh file on pi</li>
           <li>Execute on PI: sudo service motion stop</li>
-          <li>Followed by: ./startVideo.sh</li>
-          <li>Go on operator station to folder D:\gstreamer\1.0\x86_64\bin (D: then folder)</li>
-          <li>Execute /gst-launch-1.0.exe -e -v udpsrc port=5001 ! "application/x-rtp, encoding-name=JPEG, payload=26" ! rtpjpegdepay ! jpegdec ! autovideosink </li>
+          <li>Followed by: ./gstreamer.sh</li>
+          <li>Go on operator station to folder D:\gstreamer\1.0\x86_64\bin (D: (not cd) then folder)</li>
+          <li>Execute gst-launch-1.0.exe -e -v udpsrc port=5001 ! "application/x-rtp, encoding-name=JPEG, payload=26" ! rtpjpegdepay ! jpegdec ! autovideosink </li>
         </ul>
       <h2>Analyse Audio</h2>
         <ul>
@@ -123,12 +123,9 @@
         </ul>
       <h2>Thermal camera stream</h2>
         <ul>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
-          <li></li>
+          <li>Connect the small monitor to Pi</li>
+          <li>Go to folder ../Ada/Ada/examples/ </li>
+          <li>Run thermal_cam.py</li>
         </ul>
     </div>
   </div>
